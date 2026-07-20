@@ -9,9 +9,7 @@ export class DeleteBlogCommand {
 export class DeleteBlogUseCase
   implements ICommandHandler<DeleteBlogCommand, void>
 {
-  constructor(
-    private readonly blogsRepository: BlogsRepository,
-  ) {}
+  constructor(private readonly blogsRepository: BlogsRepository) {}
   async execute({ id }: DeleteBlogCommand): Promise<void> {
     await this.blogsRepository.checkBlogExistsOrError(id);
     await this.blogsRepository.softDelete(id);

@@ -1,5 +1,4 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { BlogSqlEntity } from '../../domain/blog.entity';
 import { BlogsRepository } from '../../infrastructure/blogs.repository';
 import { UpdateBlogDto } from '../../dto/update-blog.dto';
 import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
@@ -28,15 +27,11 @@ export class UpdateBlogUseCase
       });
 
     // 2. Создаём обновлённый объект
-    const updated: BlogSqlEntity = {
-      ...blog,
-      name: input.name,
-      description: input.description,
-      websiteUrl: input.websiteUrl,
-      updatedAt: new Date().toISOString(),
-    };
+    blog.name = input.name;
+    blog.description = input.description;
+    blog.websiteUrl = input.websiteUrl;
 
     // 3. Сохраняем
-    await this.blogsRepository.updateBlog(updated);
+    await this.blogsRepository.save(blog);
   }
 }

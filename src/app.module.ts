@@ -7,7 +7,7 @@ import { TestingModule } from './modules/testing/testing.module';
 import { UserAccountsModule } from './modules/user-accounts/user-accounts.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-// import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './modules/user-accounts/auth.module';
 import { EmailModule } from './modules/user-accounts/email.module';
 import { CoreConfig } from './core/core.config';
@@ -16,12 +16,24 @@ import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { DomainHttpExceptionsFilter } from './core/exceptions/filters/domain-exceptions.filter';
 import { AllHttpExceptionsFilter } from './core/exceptions/filters/all-exceptions.filter';
 import { PgModule } from './pg.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     configModule,
     CoreModule,
     PgModule,
+    TypeOrmModule.forRootAsync({
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        url: configService.get<string>('DATABASE_URL'), // Используем переменную окружения для строки подключения
+        autoLoadEntities: true, // Автоматически загружать сущности
+        synchronize: configService.get<string>('NODE_ENV') === 'development', // Отключаем автоматическую синхронизацию схемы для продакшена (может быть true для разработки)
+        logging: true,
+      }),
+      inject: [ConfigService],
+    }),
     ServeStaticModule.forRootAsync({
       inject: [CoreConfig],
       useFactory: (coreConfig: CoreConfig) => [
@@ -31,14 +43,14 @@ import { PgModule } from './pg.module';
         },
       ],
     }),
-    // ThrottlerModule.forRoot({
-    //   throttlers: [
-    //     {
-    //       ttl: 10000,
-    //       limit: 5,
-    //     },
-    //   ],
-    // }), // окно в секундах // максимум запросов
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 10000,
+          limit: 5,
+        },
+      ],
+    }), // окно в секундах // максимум запросов
     BloggersPlatformModule,
     UserAccountsModule,
     AuthModule,
@@ -58,10 +70,10 @@ import { PgModule } from './pg.module';
       provide: APP_FILTER,
       useClass: DomainHttpExceptionsFilter,
     },
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: ThrottlerGuard,
-    // },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {

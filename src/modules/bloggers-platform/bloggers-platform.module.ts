@@ -28,9 +28,11 @@ import { UpdatePostUseCase } from './posts/application/usecases/update-post.usec
 import { DeletePostUseCase } from './posts/application/usecases/delete-post.usecase';
 import { CreatePostUseCase } from './posts/application/usecases/create-post.usecase';
 import { BlogsSuperController } from './blogs/api/blogs-sa.controller';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { BlogSqlEntity } from './blogs/domain/blog.entity';
 
 @Module({
-  imports: [CqrsModule, PgModule],
+  imports: [CqrsModule, PgModule, TypeOrmModule.forFeature([BlogSqlEntity])],
   controllers: [
     BlogsController,
     PostsController,

@@ -1,92 +1,61 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { BlogSqlEntity } from '../domain/blog.entity';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
-import { Pool } from 'pg';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class BlogsRepository {
-  constructor(@Inject('PG_POOL') private readonly pool: Pool) {}
+  constructor(
+    @InjectRepository(BlogSqlEntity)
+    private readonly blogsTypeOrmRepository: Repository<BlogSqlEntity>,
+  ) {}
 
   async createBlog(blog: BlogSqlEntity): Promise<void> {
-    await this.pool.query(
-      `
-    INSERT INTO "Blogs" (
-      "id", "name", "description",
-      "websiteUrl", "isMembership", "createdAt",
-      "updatedAt", "deletedAt"
-      )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      `,
-      [
-        blog.id,
-        blog.name,
-        blog.description,
-        blog.websiteUrl,
-        blog.isMembership,
-        blog.createdAt,
-        blog.updatedAt,
-        blog.deletedAt,
-      ],
-    );
+    const newBlog = this.blogsTypeOrmRepository.create(blog);
+    await this.blogsTypeOrmRepository.save(newBlog);
+  }
+
+  async save(blog: BlogSqlEntity): Promise<void> {
+    await this.blogsTypeOrmRepository.save(blog);
   }
 
   async updateBlog(blog: BlogSqlEntity): Promise<void> {
-    await this.pool.query(
-      `UPDATE "Blogs"
-      SET
-      "name" = $2,
-      "description" = $3,
-      "websiteUrl" = $4,
-      "updatedAt" = $5
-      WHERE "id" = $1
-      `,
-      [blog.id, blog.name, blog.description, blog.websiteUrl, blog.updatedAt],
-    );
+    await this.blogsTypeOrmRepository.update(blog.id, {
+      name: blog.name,
+      description: blog.description,
+      websiteUrl: blog.websiteUrl,
+    });
   }
 
   async findById(id: string): Promise<BlogSqlEntity | null> {
-    const result = await this.pool.query<BlogSqlEntity>(
-      `
-      SELECT *
-      FROM "Blogs"
-      WHERE id = $1 AND "deletedAt"  IS NULL
-      `,
-      [id],
-    );
-    return result.rows[0] ?? null;
+    return await this.blogsTypeOrmRepository.findOne({
+      where: { id },
+    });
   }
 
-  async getBlogNameOrError(id: string): Promise<string> {
-    const result = await this.pool.query<{ name: string }>(
-      `
-      SELECT "name"
-      FROM "Blogs"
-      WHERE "id" = $1 AND "deletedAt" IS NULL 
-      `,
-      [id],
-    );
-
-    if (result.rowCount === 0) {
-      throw new DomainException({
-        code: DomainExceptionCode.NotFound,
-        message: 'Blog not found',
-      });
-    }
-
-    return result.rows[0].name;
-  }
+  // async getBlogNameOrError(id: string): Promise<string> {
+  //   const result = await this.blogsTypeOrmRepository.findOne({
+  //     select: ['name'],
+  //     where: { id },
+  //   });
+  //
+  //   if (!result) {
+  //     throw new DomainException({
+  //       code: DomainExceptionCode.NotFound,
+  //       message: 'Blog not found',
+  //     });
+  //   }
+  //
+  //   return result.name;
+  // }
 
   async checkBlogExistsOrError(id: string): Promise<void> {
-    const exists = await this.pool.query(
-      `
-      SELECT 1
-      FROM "Blogs"
-      WHERE "id" = $1 AND "deletedAt"  IS NULL
-      `,
-      [id],
-    );
-    if (exists.rowCount === 0) {
+    const exists = await this.blogsTypeOrmRepository.exists({
+      where: { id },
+    });
+    if (!exists) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
         message: 'Blog not found',
@@ -95,17 +64,10 @@ export class BlogsRepository {
   }
 
   async softDelete(id: string): Promise<void> {
-    await this.pool.query(
-      `
-        UPDATE "Blogs"
-        SET "deletedAt" = NOW()
-        WHERE "id" = $1
-       `,
-      [id],
-    );
+    await this.blogsTypeOrmRepository.softDelete(id);
   }
 
   async deleteAll(): Promise<void> {
-    await this.pool.query(`TRUNCATE "Blogs" CASCADE`);
+    await this.blogsTypeOrmRepository.clear();
   }
 }

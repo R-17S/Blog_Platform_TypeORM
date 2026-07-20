@@ -14,16 +14,12 @@ export class CreateBlogUseCase
   constructor(private readonly blogsRepository: BlogsRepository) {}
 
   async execute({ input }: CreateBlogCommand): Promise<string> {
-    const blog: BlogSqlEntity = {
-      id: crypto.randomUUID(),
-      name: input.name,
-      description: input.description,
-      websiteUrl: input.websiteUrl,
-      isMembership: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      deletedAt: null,
-    };
+    const blog = new BlogSqlEntity();
+    blog.id = crypto.randomUUID();
+    blog.name = input.name;
+    blog.description = input.description;
+    blog.websiteUrl = input.websiteUrl;
+    blog.isMembership = false;
 
     await this.blogsRepository.createBlog(blog);
     return blog.id;

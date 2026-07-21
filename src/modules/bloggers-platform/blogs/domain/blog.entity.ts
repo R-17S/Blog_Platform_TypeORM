@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 
 @Entity({ name: 'Blogs' })
-export class BlogSqlEntity {
+export class BlogEntity {
   @PrimaryColumn({ type: 'uuid' })
   id: string;
 

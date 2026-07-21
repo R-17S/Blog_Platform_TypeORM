@@ -7,15 +7,15 @@ import { DomainException } from '../../../../../core/exceptions/domain-exception
 import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
 import { Injectable } from '@nestjs/common';
 import { SortDirection } from '../../../../../core/dto/base.query-params.input-dto';
-import { BlogSqlEntity } from '../../domain/blog.entity';
+import { BlogEntity } from '../../domain/blog.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 @Injectable()
 export class BlogsQueryRepository {
   constructor(
-    @InjectRepository(BlogSqlEntity)
-    private readonly blogsTypeOrmRepository: Repository<BlogSqlEntity>,
+    @InjectRepository(BlogEntity)
+    private readonly blogsTypeOrmRepository: Repository<BlogEntity>,
   ) {}
 
   async getAllBlogs(params: BlogInputQuery): Promise<BlogsViewPaginated> {

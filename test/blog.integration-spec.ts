@@ -25,7 +25,7 @@ import {
 } from '../src/modules/bloggers-platform/blogs/application/usecases/delete-postByBlogId.usecase';
 import { DomainException } from '../src/core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../src/core/exceptions/domain-exception-codes';
-import { PostSqlEntity } from '../src/modules/bloggers-platform/posts/domain/post.entity';
+import { PostEntity } from '../src/modules/bloggers-platform/posts/domain/post.entity';
 
 describe('blogs', () => {
   let app: INestApplication;
@@ -125,7 +125,7 @@ describe('blogs', () => {
   it('should successfully update a post belonging to correct blog', async () => {
     const blogId = await createBlogUseCase.execute(new CreateBlogCommand(dto));
     const postId = crypto.randomUUID();
-    const initialPost: PostSqlEntity = {
+    const initialPost: PostEntity = {
       id: postId,
       title: 'title',
       shortDescription: 'shortDesc',
@@ -156,7 +156,7 @@ describe('blogs', () => {
       new CreateBlogCommand(dto_2),
     );
     const postId = crypto.randomUUID();
-    const initialPost: PostSqlEntity = {
+    const initialPost: PostEntity = {
       id: postId,
       title: 'title',
       shortDescription: 'shortDesc',
@@ -189,7 +189,7 @@ describe('blogs', () => {
   it('should successfully soft-delete a post within a blog', async () => {
     const blogId = await createBlogUseCase.execute(new CreateBlogCommand(dto));
     const postId = crypto.randomUUID();
-    const initialPost: PostSqlEntity = {
+    const initialPost: PostEntity = {
       id: postId,
       title: 'title',
       shortDescription: 'shortDesc',

@@ -1,5 +1,5 @@
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
-import { BlogSqlEntity } from '../../domain/blog.entity';
+import { BlogEntity } from '../../domain/blog.entity';
 
 export class BlogViewModel {
   id: string;
@@ -9,7 +9,7 @@ export class BlogViewModel {
   createdAt: Date;
   isMembership: boolean;
   // а что делать то? взвращается lean  как это типизировать ?
-  static mapToView(blog: BlogSqlEntity): BlogViewModel {
+  static mapToView(blog: BlogEntity): BlogViewModel {
     return {
       id: blog.id,
       name: blog.name,

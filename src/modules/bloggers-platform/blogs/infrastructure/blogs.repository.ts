@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { BlogSqlEntity } from '../domain/blog.entity';
+import { BlogEntity } from '../domain/blog.entity';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -8,28 +8,15 @@ import { Repository } from 'typeorm';
 @Injectable()
 export class BlogsRepository {
   constructor(
-    @InjectRepository(BlogSqlEntity)
-    private readonly blogsTypeOrmRepository: Repository<BlogSqlEntity>,
+    @InjectRepository(BlogEntity)
+    private readonly blogsTypeOrmRepository: Repository<BlogEntity>,
   ) {}
 
-  async createBlog(blog: BlogSqlEntity): Promise<void> {
-    const newBlog = this.blogsTypeOrmRepository.create(blog);
-    await this.blogsTypeOrmRepository.save(newBlog);
-  }
-
-  async save(blog: BlogSqlEntity): Promise<void> {
+  async save(blog: BlogEntity): Promise<void> {
     await this.blogsTypeOrmRepository.save(blog);
   }
 
-  async updateBlog(blog: BlogSqlEntity): Promise<void> {
-    await this.blogsTypeOrmRepository.update(blog.id, {
-      name: blog.name,
-      description: blog.description,
-      websiteUrl: blog.websiteUrl,
-    });
-  }
-
-  async findById(id: string): Promise<BlogSqlEntity | null> {
+  async findById(id: string): Promise<BlogEntity | null> {
     return await this.blogsTypeOrmRepository.findOne({
       where: { id },
     });
@@ -67,7 +54,4 @@ export class BlogsRepository {
     await this.blogsTypeOrmRepository.softDelete(id);
   }
 
-  async deleteAll(): Promise<void> {
-    await this.blogsTypeOrmRepository.clear();
-  }
 }

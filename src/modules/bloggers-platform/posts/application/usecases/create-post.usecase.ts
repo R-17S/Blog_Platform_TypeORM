@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PostsRepository } from '../../infrastructure/posts.repository';
-import { PostSqlEntity } from '../../domain/post.entity';
+import { PostEntity } from '../../domain/post.entity';
 import { BlogsRepository } from '../../../blogs/infrastructure/blogs.repository';
 
 export class CreatePostCommand {
@@ -25,25 +25,17 @@ export class CreatePostUseCase
     const { title, shortDescription, content, blogId } = command;
     await this.blogsRepository.checkBlogExistsOrError(blogId);
 
-    // 2. Создаём SQL‑сущность (плоский объект)
-    const now = new Date().toISOString();
-    const post: PostSqlEntity = {
-      id: crypto.randomUUID(),
-      title,
-      shortDescription,
-      content,
-      blogId,
-      likesCount: 0,
-      dislikesCount: 0,
-      createdAt: now,
-      updatedAt: now,
-      deletedAt: null,
-    };
+    const newPost = new PostEntity();
+    newPost.id = crypto.randomUUID();
+    newPost.title = title;
+    newPost.shortDescription = shortDescription;
+    newPost.content = content;
+    newPost.blogId = blogId;
 
     // 3. Сохраняем в базе
-    await this.postsRepository.createPost(post);
+    await this.postsRepository.save(newPost);
 
     // 4. Возвращаем id
-    return post.id;
+    return newPost.id;
   }
 }

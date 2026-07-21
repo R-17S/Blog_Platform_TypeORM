@@ -1,62 +1,29 @@
-import { PostLikeSqlEntity } from '../domain/post.like-scheme';
-import { Inject, Injectable } from '@nestjs/common';
-import { Pool } from 'pg';
+import { PostLikesEntity } from '../domain/post.like-scheme';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class PostLikesRepository {
-  constructor(@Inject('PG_POOL') private readonly pool: Pool) {}
+  constructor(
+    @InjectRepository(PostLikesEntity)
+    private readonly postLikesTypeOrmRepository: Repository<PostLikesEntity>,
+  ) {}
 
-  async createLike(like: PostLikeSqlEntity): Promise<void> {
-    await this.pool.query(
-      `
-      INSERT INTO "PostLikes" (
-        "userId", "postId", "status", "createdAt"
-      )
-      VALUES ($1, $2, $3, $4)
-      `,
-      [like.userId, like.postId, like.status, like.createdAt],
-    );
-  }
-
-  async updateLike(like: PostLikeSqlEntity): Promise<void> {
-    await this.pool.query(
-      `
-      UPDATE "PostLikes"
-      SET "status" = $3,
-          "createdAt" = $4
-      WHERE "userId" = $1 AND "postId" = $2
-      `,
-      [like.userId, like.postId, like.status, like.createdAt],
-    );
+  async save(postLike: PostLikesEntity): Promise<void> {
+    await this.postLikesTypeOrmRepository.save(postLike);
   }
 
   async findByPostAndUser(
     postId: string,
     userId: string,
-  ): Promise<PostLikeSqlEntity | null> {
-    const result = await this.pool.query<PostLikeSqlEntity>(
-      `
-      SELECT *
-      FROM "PostLikes"
-      WHERE "postId" = $1 AND "userId" = $2
-      `,
-      [postId, userId],
-    );
-
-    return result.rows[0] ?? null;
+  ): Promise<PostLikesEntity | null> {
+    return await this.postLikesTypeOrmRepository.findOne({
+      where: { postId, userId },
+    });
   }
 
   async deleteLike(postId: string, userId: string): Promise<void> {
-    await this.pool.query(
-      `
-      DELETE FROM "PostLikes"
-      WHERE "postId" = $1 AND "userId" = $2
-      `,
-      [postId, userId],
-    );
-  }
-
-  async deleteAll(): Promise<void> {
-    await this.pool.query(`TRUNCATE "PostLikes" CASCADE`);
+    await this.postLikesTypeOrmRepository.delete({ postId, userId });
   }
 }

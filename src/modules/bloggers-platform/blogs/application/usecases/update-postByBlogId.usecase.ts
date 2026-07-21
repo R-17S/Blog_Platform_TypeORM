@@ -48,10 +48,8 @@ export class UpdatePostByBlogIdUseCase
     post.content = input.content;
     post.blogId = blogId;
 
-    // 5. Обновляем updatedAt
-    post.updatedAt = new Date().toISOString();
 
     // 6. Сохраняем
-    await this.postsRepository.updatePost(post);
+    await this.postsRepository.save(post);
   }
 }

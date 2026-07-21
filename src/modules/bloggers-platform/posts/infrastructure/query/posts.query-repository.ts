@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PostInputQuery } from '../../api/input-dto/get-posts-query-params.input-dto';
 import {
   PostsViewPaginated,
@@ -8,13 +8,16 @@ import {
 import { PostLikesQueryRepository } from './posts.likes.query-repository';
 import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
-import { Pool } from 'pg';
 import { SortDirection } from '../../../../../core/dto/base.query-params.input-dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { PostEntity } from '../../domain/post.entity';
 
 @Injectable()
 export class PostsQueryRepository {
   constructor(
-    @Inject('PG_POOL') private readonly pool: Pool,
+    @InjectRepository(PostEntity)
+    private readonly postsTypeOrmRepository: Repository<PostEntity>,
     private readonly postLikesRepository: PostLikesQueryRepository,
   ) {}
 
@@ -22,7 +25,9 @@ export class PostsQueryRepository {
     params: PostInputQuery,
     userId?: string,
   ): Promise<PostsViewPaginated> {
-    const filter = `p."deletedAt" IS NULL`;
+    const queryBuilder = this.postsTypeOrmRepository
+      .createQueryBuilder('pqb')
+      .leftJoinAndSelect('pqb.blog', 'blog');
     const allowedSortBy = [
       'id',
       'title',
@@ -37,34 +42,27 @@ export class PostsQueryRepository {
       ? params.sortBy
       : 'createdAt';
 
-
     const sortDirection =
       params.sortDirection === SortDirection.Asc ? 'ASC' : 'DESC';
-    const totalCountResult = await this.pool.query<{ count: string }>(
-      `
-        SELECT COUNT(*)
-        FROM "Posts" p
-        WHERE ${filter}`,
-    );
-    const totalCount = Number(totalCountResult.rows[0].count);
 
-    const query = `
-      SELECT *
-      FROM "v_posts_with_blog_name" p
-      WHERE ${filter}
-      ORDER BY p."${sortBy}" ${sortDirection}
-      LIMIT $1 OFFSET $2
-    `;
+    let sortField = `p.@{sortBy}`;
+    if (sortBy === 'blogName') {
+      sortField = 'blog.name';
+    }
+    queryBuilder.orderBy(sortField, sortDirection);
+    const offset = params.calculateSkip();
+    const limit = params.pageSize;
+    queryBuilder.skip(offset).take(limit);
 
-    const postsResult = await this.pool.query(query, [
-      params.pageSize,
-      params.calculateSkip(),
-    ]);
+    const [posts, totalCount] = await queryBuilder.getManyAndCount();
 
-    const posts = postsResult.rows;
+    const mappedPost: PostWithBlogNameSqlEntity[] = posts.map((p) => ({
+      ...p,
+      blogName: p.blog.name,
+    }));
 
     const items = await this.postLikesRepository.enrichPostsWithLikes(
-      posts,
+      mappedPost,
       userId,
     );
 
@@ -80,17 +78,10 @@ export class PostsQueryRepository {
     id: string,
     userId?: string,
   ): Promise<PostViewModel> {
-    const result = await this.pool.query<PostWithBlogNameSqlEntity>(
-      `
-        SELECT *
-        FROM "v_posts_with_blog_name" p
-        WHERE p."id" = $1 AND p."deletedAt" IS NULL
-      `,
-      [id],
-    );
-
-    const post = result.rows[0];
-    // сомнительно конечно проверять только что созданый пост
+    const post = await this.postsTypeOrmRepository.findOne({
+      where: { id },
+      relations: { blog: true },
+    });
     if (!post) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
@@ -98,8 +89,12 @@ export class PostsQueryRepository {
       });
     }
 
+    const mappedPost: PostWithBlogNameSqlEntity = {
+      ...post,
+      blogName: post.blog.name,
+    };
     const items = await this.postLikesRepository.enrichPostsWithLikes(
-      [post],
+      [mappedPost],
       userId,
     );
     return items[0];
@@ -110,19 +105,9 @@ export class PostsQueryRepository {
     params: PostInputQuery,
     userId?: string,
   ): Promise<PostsViewPaginated> {
-    const { pageSize, pageNumber } = params;
-    const filter = `p."blogId" = $1 AND p."deletedAt" IS NULL`;
-    const offset = params.calculateSkip();
-
-    const totalCountResult = await this.pool.query<{ count: string }>(
-      `
-      SELECT COUNT(*)
-      FROM "Posts" p
-      WHERE ${filter}
-      `,
-      [id],
-    );
-    const totalCount = Number(totalCountResult.rows[0].count);
+    const queryBuilder = this.postsTypeOrmRepository.createQueryBuilder('p');
+    queryBuilder.leftJoinAndSelect('p.blog', 'blog');
+    queryBuilder.where('p.blogId = : blogId', { blogId: id });
 
     const allowedSortBy = [
       'id',
@@ -132,35 +117,35 @@ export class PostsQueryRepository {
       'likesCount',
       'dislikesCount',
       'createdAt',
+      'blogName',
     ];
     const sortBy = allowedSortBy.includes(params.sortBy)
       ? params.sortBy
       : 'createdAt';
+
     const sortDirection =
       params.sortDirection === SortDirection.Asc ? 'ASC' : 'DESC';
-    // получение самих постов с пагинацией и сортировкой
-    const postsResult = await this.pool.query<PostWithBlogNameSqlEntity>(
-      `
-        SELECT *
-        FROM "v_posts_with_blog_name" p
-        WHERE ${filter}
-        ORDER BY p."${sortBy}" ${sortDirection} 
-        LIMIT $2 OFFSET $3
-      `,
-      [id, pageSize, offset],
-    );
 
-    const posts = postsResult.rows;
+    const offset = params.calculateSkip();
+    const limit = params.pageSize;
+    queryBuilder.orderBy(`p.${sortBy}`, sortDirection);
+    queryBuilder.skip(offset).take(limit);
+    const [posts, totalCount] = await queryBuilder.getManyAndCount();
+
+    const mappedPost: PostWithBlogNameSqlEntity[] = posts.map((p) => ({
+      ...p,
+      blogName: p.blog.name,
+    }));
 
     const items = await this.postLikesRepository.enrichPostsWithLikes(
-      posts,
+      mappedPost,
       userId,
     );
 
     return PostsViewPaginated.mapToView({
       items,
-      page: pageNumber,
-      pageSize,
+      page: params.pageNumber,
+      pageSize: params.pageSize,
       totalCount,
     });
   }

@@ -1,38 +1,33 @@
-import { Inject, Injectable } from '@nestjs/common';
-
-import { PostSqlEntity } from '../domain/post.entity';
+import { Injectable } from '@nestjs/common';
+import { PostEntity } from '../domain/post.entity';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
-import { Pool } from 'pg';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class PostsRepository {
-  constructor(@Inject('PG_POOL') private readonly pool: Pool) {}
+  constructor(
+    @InjectRepository(PostEntity)
+    private readonly postsTypeOrmRepository: Repository<PostEntity>,
+  ) {}
 
-  async findById(id: string): Promise<PostSqlEntity | null> {
-    const result = await this.pool.query<PostSqlEntity>(
-      `
-      SELECT *
-      FROM "Posts"
-      WHERE "id" = $1 AND "deletedAt" IS NULL
-      `,
-      [id],
-    );
+  async save(post: PostEntity): Promise<void> {
+    await this.postsTypeOrmRepository.save(post);
+  }
 
-    return result.rows[0] ?? null;
+  async findById(id: string): Promise<PostEntity | null> {
+    return await this.postsTypeOrmRepository.findOne({
+      where: { id },
+    });
   }
 
   async checkPostExistsOrError(id: string): Promise<void> {
-    const result = await this.pool.query(
-      `
-      SELECT 1
-      FROM "Posts"
-      WHERE "id" = $1 AND "deletedAt" IS NULL
-      `,
-      [id],
-    );
+    const exists = await this.postsTypeOrmRepository.exists({
+      where: { id },
+    });
 
-    if (result.rowCount === 0) {
+    if (!exists) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
         message: 'Post not found',
@@ -40,86 +35,14 @@ export class PostsRepository {
     }
   }
 
-  async deleteAll(): Promise<void> {
-    await this.pool.query(`TRUNCATE "Posts" CASCADE`);
-  }
-
   async softDelete(id: string): Promise<void> {
-    await this.pool.query(
-      `
-      UPDATE "Posts"
-      SET "deletedAt" = NOW()
-      WHERE "id" = $1
-      `,
-      [id],
-    );
+    await this.postsTypeOrmRepository.softDelete(id);
   }
 
-  async findByBlogId(blogId: string): Promise<PostSqlEntity[]> {
-    const result = await this.pool.query<PostSqlEntity>(
-      `
-      SELECT *
-      FROM "Posts"
-      WHERE "blogId" = $1 AND "deletedAt" IS NULL
-      ORDER BY "createdAt" DESC
-      `,
-      [blogId],
-    );
-
-    return result.rows;
-  }
-
-  async createPost(post: PostSqlEntity): Promise<void> {
-    await this.pool.query<PostSqlEntity>(
-      `
-      INSERT INTO "Posts" (
-        "id", "title", "shortDescription", "content",
-        "blogId", "likesCount", "dislikesCount",
-        "createdAt", "updatedAt", "deletedAt"
-      )
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
-      `,
-      [
-        post.id,
-        post.title,
-        post.shortDescription,
-        post.content,
-        post.blogId,
-        post.likesCount,
-        post.dislikesCount,
-        post.createdAt,
-        post.updatedAt,
-        post.deletedAt,
-      ],
-    );
-  }
-
-  async updatePost(post: PostSqlEntity): Promise<void> {
-    await this.pool.query(
-      `
-      UPDATE "Posts"
-      SET
-        "title" = $2,
-        "shortDescription" = $3,
-        "content" = $4,
-        "blogId" = $5,
-        "likesCount" = $6,
-        "dislikesCount" = $7,
-        "updatedAt" = $8,
-        "deletedAt" = $9
-      WHERE "id" = $1
-      `,
-      [
-        post.id,
-        post.title,
-        post.shortDescription,
-        post.content,
-        post.blogId,
-        post.likesCount,
-        post.dislikesCount,
-        post.updatedAt,
-        post.deletedAt,
-      ],
-    );
-  }
+  // async findByBlogId(blogId: string): Promise<PostSqlEntity[]> {
+  //   return await this.postsTypeOrmRepository.find({
+  //     where: { blogId },
+  //     order: { createdAt: 'DESC' },
+  //   });
+  // }
 }

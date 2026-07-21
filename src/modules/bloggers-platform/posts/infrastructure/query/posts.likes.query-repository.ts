@@ -1,15 +1,20 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { NewestLikeViewModel } from '../../dto/newest-like-view-model';
 import {
   LikeStatusTypes,
   PostViewModel,
   PostWithBlogNameSqlEntity,
 } from '../../api/view-dto/posts.view-dto';
-import { Pool } from 'pg';
+import { PostLikesEntity } from '../../domain/post.like-scheme';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class PostLikesQueryRepository {
-  constructor(@Inject('PG_POOL') private readonly pool: Pool) {}
+  constructor(
+    @InjectRepository(PostLikesEntity)
+    private readonly PostLikesQueryRepository: Repository<PostLikesEntity>,
+  ) {}
 
   async getStatusesForPosts(
     userId: string,

@@ -29,7 +29,6 @@ import { SkipThrottle } from '@nestjs/throttler';
 export class CommentsController {
   constructor(
     private readonly commandBus: CommandBus,
-    //private readonly commentsService: CommentsService,
     private readonly commentsQueryRepository: CommentsQueryRepository,
   ) {}
 

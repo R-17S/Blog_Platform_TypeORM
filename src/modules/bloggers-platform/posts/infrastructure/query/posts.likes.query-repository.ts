@@ -5,7 +5,7 @@ import {
   PostViewModel,
   PostWithBlogNameSqlEntity,
 } from '../../api/view-dto/posts.view-dto';
-import { PostLikesEntity } from '../../domain/post.like-scheme';
+import { PostLikesEntity } from '../../domain/post.like-entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -13,7 +13,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 export class PostLikesQueryRepository {
   constructor(
     @InjectRepository(PostLikesEntity)
-    private readonly PostLikesQueryRepository: Repository<PostLikesEntity>,
+    private readonly PostLikesRepository: Repository<PostLikesEntity>,
   ) {}
 
   async getStatusesForPosts(
@@ -22,10 +22,10 @@ export class PostLikesQueryRepository {
   ): Promise<Record<string, LikeStatusTypes>> {
     if (postIds.length === 0) return {};
 
-    const result = await this.pool.query<{
+    const result: {
       postId: string;
       status: LikeStatusTypes;
-    }>(
+    }[] = await this.PostLikesRepository.query(
       `
       SELECT "postId", "status"
       FROM "PostLikes"
@@ -35,7 +35,7 @@ export class PostLikesQueryRepository {
     );
 
     const map: Record<string, LikeStatusTypes> = {};
-    for (const row of result.rows) {
+    for (const row of result) {
       map[row.postId] = row.status;
     }
     return map;
@@ -46,12 +46,12 @@ export class PostLikesQueryRepository {
   ): Promise<Record<string, NewestLikeViewModel[]>> {
     if (postIds.length === 0) return {};
 
-    const result = await this.pool.query<{
+    const result: {
       postId: string;
       userId: string;
       userLogin: string;
       createdAt: string;
-    }>(
+    }[] = await this.PostLikesRepository.query(
       `
           SELECT pl."postId", pl."userId", u."login" AS "userLogin", pl."createdAt"
           FROM "PostLikes" pl
@@ -64,7 +64,7 @@ export class PostLikesQueryRepository {
 
     const map: Record<string, NewestLikeViewModel[]> = {};
 
-    for (const row of result.rows) {
+    for (const row of result) {
       if (!map[row.postId]) map[row.postId] = [];
 
       if (map[row.postId].length < 3) {
@@ -83,12 +83,12 @@ export class PostLikesQueryRepository {
     postIds: string[],
   ): Promise<Record<string, NewestLikeViewModel[]>> {
     if (postIds.length === 0) return {};
-    const result = await this.pool.query<{
+    const result: {
       postId: string;
       userId: string;
       userLogin: string;
       createdAt: Date;
-    }>(
+    }[] = await this.PostLikesRepository.query(
       `
        WITH "RankedLikes" AS ( --создаём временную таблицу 
        SELECT
@@ -115,7 +115,7 @@ export class PostLikesQueryRepository {
     );
     const map: Record<string, NewestLikeViewModel[]> = {};
 
-    for (const row of result.rows) {
+    for (const row of result) {
       if (!map[row.postId]) map[row.postId] = [];
       map[row.postId].push({
         userId: row.userId,
@@ -130,7 +130,10 @@ export class PostLikesQueryRepository {
   async getLikesCountForPosts(postIds: string[]) {
     if (postIds.length === 0) return {};
 
-    const result = await this.pool.query<{ postId: string; count: string }>(
+    const result: {
+      postId: string;
+      count: string;
+    }[] = await this.PostLikesRepository.query(
       `
       SELECT "postId", COUNT(*) AS count
       FROM "PostLikes"
@@ -141,7 +144,7 @@ export class PostLikesQueryRepository {
     );
 
     const map: Record<string, number> = {};
-    for (const row of result.rows) {
+    for (const row of result) {
       map[row.postId] = Number(row.count);
     }
     return map;
@@ -150,7 +153,10 @@ export class PostLikesQueryRepository {
   async getDislikesCountForPosts(postIds: string[]) {
     if (postIds.length === 0) return {};
 
-    const result = await this.pool.query<{ postId: string; count: string }>(
+    const result: {
+      postId: string;
+      count: string;
+    }[] = await this.PostLikesRepository.query(
       `
       SELECT "postId", COUNT(*) AS count
       FROM "PostLikes"
@@ -161,7 +167,7 @@ export class PostLikesQueryRepository {
     );
 
     const map: Record<string, number> = {};
-    for (const row of result.rows) {
+    for (const row of result) {
       map[row.postId] = Number(row.count);
     }
     return map;

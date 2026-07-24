@@ -3,7 +3,7 @@ import { CommentsRepository } from '../../infrastructure/comments.repository';
 import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
 import { UpdateCommentDto } from '../../dto/update-comment.dto';
-import { CommentSqlEntity } from '../../domain/comment.entity';
+import { CommentEntity } from '../../domain/comment.entity';
 
 export class UpdateCommentCommand {
   constructor(
@@ -20,7 +20,6 @@ export class UpdateCommentUseCase
   constructor(private readonly commentsRepository: CommentsRepository) {}
 
   async execute({ id, input, userId }: UpdateCommentCommand): Promise<void> {
-    // 1. Ищем комментарий
     const comment = await this.commentsRepository.findById(id);
     if (!comment) {
       throw new DomainException({
@@ -29,7 +28,6 @@ export class UpdateCommentUseCase
       });
     }
 
-    // 2. Проверяем владельца
     if (comment.userId !== userId) {
       throw new DomainException({
         code: DomainExceptionCode.Forbidden,
@@ -37,14 +35,9 @@ export class UpdateCommentUseCase
       });
     }
 
-    // 3. Обновляем данные
-    const updated: CommentSqlEntity = {
-      ...comment,
-      content: input.content,
-      updatedAt: new Date().toISOString(),
-    };
+    const updated = new CommentEntity();
+    comment.content = input.content;
 
-    // 4. Сохраняем
-    await this.commentsRepository.updateComment(updated);
+    await this.commentsRepository.save(updated);
   }
 }

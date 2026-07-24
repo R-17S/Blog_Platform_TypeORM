@@ -43,7 +43,7 @@ export class PostViewModel {
       content: post.content,
       blogId: post.blogId,
       blogName: post.blogName,
-      createdAt: new Date(post.createdAt),
+      createdAt: post.createdAt,
       extendedLikesInfo: {
         likesCount,
         dislikesCount,

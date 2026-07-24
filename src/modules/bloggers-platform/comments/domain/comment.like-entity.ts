@@ -1,0 +1,41 @@
+import { LikeStatusTypes } from '../../posts/api/view-dto/posts.view-dto';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { CommentEntity } from './comment.entity';
+
+@Entity({ name: 'CommentLikes' })
+export class CommentLikeEntity {
+  @PrimaryColumn({ type: 'uuid' })
+  commentId: string;
+
+  @PrimaryColumn({ type: 'uuid' })
+  userId: string;
+
+  @ManyToOne(() => CommentEntity, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'commentId' })
+  comment: CommentEntity;
+
+  @ManyToOne(() => UserEntity, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'userId' })
+  user: UserEntity;
+
+  @Column({
+    type: 'character varying',
+    length: 10,
+    default: LikeStatusTypes.None,
+  })
+  status: string;
+
+  @CreateDateColumn({ type: 'timestamp without time zone' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ type: 'timestamp without time zone' })
+  updatedAt: Date;
+}

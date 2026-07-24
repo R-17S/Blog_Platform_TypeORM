@@ -1,5 +1,5 @@
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
-import { CommentSqlEntity } from '../../domain/comment.entity';
+import { CommentEntity } from '../../domain/comment.entity';
 
 export enum LikeStatusTypes {
   Like = 'Like',
@@ -7,7 +7,7 @@ export enum LikeStatusTypes {
   None = 'None',
 }
 
-export type CommentWithUserLoginSqlEntity = CommentSqlEntity & {
+export type CommentWithUserLoginSqlEntity = CommentEntity & {
   userLogin: string;
 };
 export class CommentViewModel {
@@ -17,7 +17,7 @@ export class CommentViewModel {
     userId: string;
     userLogin: string;
   };
-  createdAt: string;
+  createdAt: Date;
   likesInfo: {
     likesCount: number;
     dislikesCount: number;

@@ -38,11 +38,4 @@ export class PostsRepository {
   async softDelete(id: string): Promise<void> {
     await this.postsTypeOrmRepository.softDelete(id);
   }
-
-  // async findByBlogId(blogId: string): Promise<PostSqlEntity[]> {
-  //   return await this.postsTypeOrmRepository.find({
-  //     where: { blogId },
-  //     order: { createdAt: 'DESC' },
-  //   });
-  // }
 }

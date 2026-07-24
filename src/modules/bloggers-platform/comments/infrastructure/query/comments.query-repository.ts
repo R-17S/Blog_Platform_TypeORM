@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   CommentsViewPaginated,
   CommentViewModel,
@@ -9,13 +9,16 @@ import { CommentLikesQueryRepository } from './comments.likes.query-repository';
 import { CommentInputQuery } from '../../api/input-dto/get-comments-query-params.input-dto';
 import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
-import { Pool } from 'pg';
 import { SortDirection } from '../../../../../core/dto/base.query-params.input-dto';
+import { CommentEntity } from '../../domain/comment.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class CommentsQueryRepository {
   constructor(
-    @Inject('PG_POOL') private readonly pool: Pool,
+    @InjectRepository(CommentEntity)
+    private readonly commentsTypeOrmRepository: Repository<CommentEntity>,
     private readonly commentLikesQueryRepository: CommentLikesQueryRepository,
   ) {}
 
@@ -23,16 +26,10 @@ export class CommentsQueryRepository {
     id: string,
     userId?: string,
   ): Promise<CommentViewModel> {
-    const result = await this.pool.query<CommentWithUserLoginSqlEntity>(
-      `
-      SELECT *
-      FROM "v_comments_with_user_login" c
-      WHERE c."id" = $1 AND c."deletedAt" IS NULL
-      `,
-      [id],
-    );
-
-    const comment = result.rows[0];
+    const comment = await this.commentsTypeOrmRepository.findOne({
+      where: { id },
+      relations: { user: true },
+    });
 
     if (!comment) {
       throw new DomainException({
@@ -56,8 +53,13 @@ export class CommentsQueryRepository {
     const likesCount = likesMap[id] ?? 0;
     const dislikesCount = dislikesMap[id] ?? 0;
 
+    const mappedComment: CommentWithUserLoginSqlEntity = {
+      ...comment,
+      userLogin: comment.user.login,
+    };
+
     return CommentViewModel.mapToView(
-      comment,
+      mappedComment,
       myStatus,
       likesCount,
       dislikesCount,
@@ -69,20 +71,9 @@ export class CommentsQueryRepository {
     params: CommentInputQuery,
     userId?: string,
   ): Promise<CommentsViewPaginated> {
-    const { pageSize, pageNumber } = params;
-    const offset = params.calculateSkip();
-
-    // 1. totalCount
-    const totalCountResult = await this.pool.query<{ count: string }>(
-      `
-      SELECT COUNT(*)
-      FROM "Comments"
-      WHERE "postId" = $1 AND "deletedAt" IS NULL
-      `,
-      [postId],
-    );
-    const totalCount = Number(totalCountResult.rows[0].count);
-
+    const queryBuilder = this.commentsTypeOrmRepository.createQueryBuilder('c');
+    queryBuilder.leftJoinAndSelect('c.user', 'user');
+    queryBuilder.where('c.postId = :postId', { postId });
     const allowedSortBy = [
       'id',
       'content',
@@ -90,7 +81,7 @@ export class CommentsQueryRepository {
       'userId',
       'likesCount',
       'dislikesCount',
-      'createdAt',
+      'userLogin',
     ];
     const sortBy = allowedSortBy.includes(params.sortBy)
       ? params.sortBy
@@ -98,26 +89,17 @@ export class CommentsQueryRepository {
     const sortDirection =
       params.sortDirection === SortDirection.Asc ? 'ASC' : 'DESC';
 
-    let orderByClause = '';
+    let sortField = `c.${sortBy}`;
     if (sortBy === 'userLogin') {
-      orderByClause = `u.login ${sortDirection}`; // Сортируем по полю login из таблицы Users
-    } else {
-      orderByClause = `c."${sortBy}" ${sortDirection}`; // Сортируем по полям из таблицы Comments
+      sortField = 'u.login';
     }
+    const offset = params.calculateSkip();
+    const limit = params.pageSize;
+    queryBuilder.orderBy(`c.${sortField}`, sortDirection);
+    queryBuilder.skip(offset).take(limit);
 
     // 2. сами комментарии
-    const commentsResult = await this.pool.query<CommentWithUserLoginSqlEntity>(
-      `
-      SELECT *
-      FROM "v_comments_with_user_login" c
-      WHERE c."postId" = $1 AND c."deletedAt" IS NULL
-      ORDER BY ${orderByClause}
-      LIMIT $2 OFFSET $3
-      `,
-      [postId, pageSize, offset],
-    );
-
-    const comments = commentsResult.rows;
+    const [comments, totalCount] = await queryBuilder.getManyAndCount();
     const commentIds = comments.map((c) => c.id);
 
     // 3. лайки/дизлайки
@@ -134,20 +116,25 @@ export class CommentsQueryRepository {
         )
       : {};
 
-    // 5. маппинг
-    const items = comments.map((comment) =>
-      CommentViewModel.mapToView(
-        comment,
+    const items = comments.map((comment) => {
+      const mappedComment: CommentWithUserLoginSqlEntity = {
+        ...comment,
+        userLogin: comment.user.login,
+      };
+
+      // 5. маппинг
+      return CommentViewModel.mapToView(
+        mappedComment,
         statusesMap[comment.id] ?? LikeStatusTypes.None,
         likesMap[comment.id] ?? 0,
         dislikesMap[comment.id] ?? 0,
-      ),
-    );
+      );
+    });
 
     return CommentsViewPaginated.mapToView({
       items,
-      page: pageNumber,
-      pageSize,
+      page: params.pageNumber,
+      pageSize: params.pageSize,
       totalCount,
     });
   }

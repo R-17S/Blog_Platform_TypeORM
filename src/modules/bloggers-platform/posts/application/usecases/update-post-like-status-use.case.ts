@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { PostLikeSqlEntity } from '../../domain/post.like-scheme';
+import { PostLikesEntity } from '../../domain/post.like-entity';
 import { PostsRepository } from '../../infrastructure/posts.repository';
 import { PostLikesRepository } from '../../infrastructure/post-likes.repository';
 import { LikeStatusTypes } from '../../api/view-dto/posts.view-dto';
@@ -37,22 +37,12 @@ export class UpdatePostLikeStatusUseCase
       if (existing) await this.postLikesRepository.deleteLike(postId, userId);
       return;
     }
-    if (existing) {
-      await this.postLikesRepository.updateLike({
-        userId,
-        postId,
-        status: likeStatus,
-        createdAt: new Date().toISOString(),
-      });
-      return;
-    } else {
-      const newLike: PostLikeSqlEntity = {
-        postId,
-        userId,
-        status: likeStatus,
-        createdAt: new Date().toISOString(),
-      };
-      await this.postLikesRepository.createLike(newLike);
-    }
+    const status = existing ?? new PostLikesEntity();
+
+    status.postId = postId;
+    status.userId = userId;
+    status.status = likeStatus;
+
+    await this.postLikesRepository.save(status);
   }
 }

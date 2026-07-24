@@ -72,7 +72,7 @@ export class PostsController {
   async getCommentsByPostId(
     @Param('postId') postId: string,
     @Query() query: CommentInputQuery,
-    @ExtractUserIfExistsFromRequest() user: UserContextDto, // или использовать кастомный декоратор для userId, что бы я мог потом статус глянуть
+    @ExtractUserIfExistsFromRequest() user: UserContextDto,
   ): Promise<CommentsViewPaginated> {
     await this.postsRepository.checkPostExistsOrError(postId);
     return await this.commentsQueryRepository.getCommentsByPostId(

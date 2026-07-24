@@ -1,14 +1,8 @@
 import {
   Controller,
   Get,
-  Post,
-  Put,
-  Delete,
   Param,
-  Body,
   Query,
-  HttpCode,
-  HttpStatus,
   UseGuards,
 } from '@nestjs/common';
 import { BlogInputQuery } from './input-dto/get-blogs-query-params.input-dto';

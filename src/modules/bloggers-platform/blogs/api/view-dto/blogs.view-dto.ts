@@ -8,14 +8,14 @@ export class BlogViewModel {
   websiteUrl: string;
   createdAt: Date;
   isMembership: boolean;
-  // а что делать то? взвращается lean  как это типизировать ?
+
   static mapToView(blog: BlogEntity): BlogViewModel {
     return {
       id: blog.id,
       name: blog.name,
       description: blog.description,
       websiteUrl: blog.websiteUrl,
-      createdAt: new Date(blog.createdAt),
+      createdAt: blog.createdAt,
       isMembership: blog.isMembership,
     };
   }

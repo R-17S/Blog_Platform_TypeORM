@@ -22,22 +22,6 @@ export class BlogsRepository {
     });
   }
 
-  // async getBlogNameOrError(id: string): Promise<string> {
-  //   const result = await this.blogsTypeOrmRepository.findOne({
-  //     select: ['name'],
-  //     where: { id },
-  //   });
-  //
-  //   if (!result) {
-  //     throw new DomainException({
-  //       code: DomainExceptionCode.NotFound,
-  //       message: 'Blog not found',
-  //     });
-  //   }
-  //
-  //   return result.name;
-  // }
-
   async checkBlogExistsOrError(id: string): Promise<void> {
     const exists = await this.blogsTypeOrmRepository.exists({
       where: { id },
@@ -53,5 +37,4 @@ export class BlogsRepository {
   async softDelete(id: string): Promise<void> {
     await this.blogsTypeOrmRepository.softDelete(id);
   }
-
 }

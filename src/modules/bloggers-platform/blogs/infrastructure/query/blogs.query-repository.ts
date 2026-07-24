@@ -20,7 +20,7 @@ export class BlogsQueryRepository {
 
   async getAllBlogs(params: BlogInputQuery): Promise<BlogsViewPaginated> {
     // 1. Фильтр
-    const queryBuilder = this.blogsTypeOrmRepository.createQueryBuilder('bqb');
+    const queryBuilder = this.blogsTypeOrmRepository.createQueryBuilder('b');
 
     if (params.searchNameTerm) {
       queryBuilder.andWhere('b.name ILIKE :searchNameTerm', {
@@ -44,9 +44,9 @@ export class BlogsQueryRepository {
 
     const stringFields = ['name', 'description', 'websiteUrl'];
     if (stringFields.includes(sortBy)) {
-      queryBuilder.orderBy(`bqb.${sortBy} COLLATE "C"`, sortDirection);
+      queryBuilder.orderBy(`b.${sortBy} COLLATE "C"`, sortDirection);
     } else {
-      queryBuilder.orderBy(`bqb.${sortBy}`, sortDirection);
+      queryBuilder.orderBy(`b.${sortBy}`, sortDirection);
     }
 
     const offset = params.calculateSkip();

@@ -3,6 +3,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { CommentsRepository } from '../../infrastructure/comments.repository';
 import { CommentLikesRepository } from '../../infrastructure/comment-likes.repository';
+import { CommentLikeEntity } from '../../domain/comment.like-entity';
 
 export class UpdateCommentLikeStatusCommand {
   constructor(
@@ -25,13 +26,9 @@ export class UpdateCommentLikeStatusUseCase
   async execute({
     commentId,
     userId,
-    userLogin,
     likeStatus,
   }: UpdateCommentLikeStatusCommand): Promise<void> {
-    // 1. Проверяем, что комментарий существует
     await this.commentsRepository.checkCommentExistsOrError(commentId);
-
-    // 2. Ищем существующий лайк
     const existing = await this.commentLikesRepository.findByCommentAndUser(
       commentId,
       userId,
@@ -45,27 +42,12 @@ export class UpdateCommentLikeStatusUseCase
       return;
     }
 
-    const now = new Date().toISOString();
+    const status = existing ?? new CommentLikeEntity();
 
-    // 4. Если лайк существует → обновляем
-    if (existing) {
-      await this.commentLikesRepository.updateLike({
-        commentId,
-        userId,
-        userLogin: existing.userLogin,
-        status: likeStatus,
-        createdAt: now, // время последнего действия
-      });
-      return;
-    }
+    status.commentId = commentId;
+    status.userId = userId;
+    status.status = likeStatus;
 
-    // 5. Если лайка нет → создаём
-    await this.commentLikesRepository.createLike({
-      commentId,
-      userId,
-      userLogin,
-      status: likeStatus,
-      createdAt: now,
-    });
+    await this.commentLikesRepository.save(status);
   }
 }

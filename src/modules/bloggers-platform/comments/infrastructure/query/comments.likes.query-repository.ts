@@ -1,10 +1,15 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { LikeStatusTypes } from '../../api/view-dto/comments.view-dto';
-import { Pool } from 'pg';
+import { CommentLikeEntity } from '../../domain/comment.like-entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class CommentLikesQueryRepository {
-  constructor(@Inject('PG_POOL') private readonly pool: Pool) {}
+  constructor(
+    @InjectRepository(CommentLikeEntity)
+    private readonly commentLikesRepository: Repository<CommentLikeEntity>,
+  ) {}
 
   async getStatusesForComments(
     userId: string,
@@ -12,7 +17,7 @@ export class CommentLikesQueryRepository {
   ): Promise<Record<string, LikeStatusTypes>> {
     if (commentIds.length === 0) return {};
 
-    const result = await this.pool.query<{
+    const rows = await this.commentLikesRepository.query<{
       commentId: string;
       status: LikeStatusTypes;
     }>(
@@ -25,7 +30,7 @@ export class CommentLikesQueryRepository {
     );
 
     const map: Record<string, LikeStatusTypes> = {};
-    for (const row of result.rows) {
+    for (const row of rows) {
       map[row.commentId] = row.status;
     }
     return map;
@@ -36,7 +41,10 @@ export class CommentLikesQueryRepository {
   ): Promise<Record<string, number>> {
     if (commentIds.length === 0) return {};
 
-    const result = await this.pool.query<{ commentId: string; count: string }>(
+    const result = await this.commentLikesRepository.query<{
+      commentId: string;
+      count: string;
+    }>(
       `
       SELECT "commentId", COUNT(*) AS count
       FROM "CommentLikes"
@@ -47,7 +55,7 @@ export class CommentLikesQueryRepository {
     );
 
     const map: Record<string, number> = {};
-    for (const row of result.rows) {
+    for (const row of result) {
       map[row.commentId] = Number(row.count);
     }
     return map;
@@ -58,7 +66,10 @@ export class CommentLikesQueryRepository {
   ): Promise<Record<string, number>> {
     if (commentIds.length === 0) return {};
 
-    const result = await this.pool.query<{ commentId: string; count: string }>(
+    const result = await this.commentLikesRepository.query<{
+      commentId: string;
+      count: string;
+    }>(
       `
       SELECT "commentId", COUNT(*) AS count
       FROM "CommentLikes"
@@ -69,7 +80,7 @@ export class CommentLikesQueryRepository {
     );
 
     const map: Record<string, number> = {};
-    for (const row of result.rows) {
+    for (const row of result) {
       map[row.commentId] = Number(row.count);
     }
     return map;

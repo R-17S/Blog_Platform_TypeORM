@@ -18,7 +18,7 @@ export class PostsQueryRepository {
   constructor(
     @InjectRepository(PostEntity)
     private readonly postsTypeOrmRepository: Repository<PostEntity>,
-    private readonly postLikesRepository: PostLikesQueryRepository,
+    private readonly postLikesQueryRepository: PostLikesQueryRepository,
   ) {}
 
   async getAllPosts(
@@ -26,8 +26,8 @@ export class PostsQueryRepository {
     userId?: string,
   ): Promise<PostsViewPaginated> {
     const queryBuilder = this.postsTypeOrmRepository
-      .createQueryBuilder('pqb')
-      .leftJoinAndSelect('pqb.blog', 'blog');
+      .createQueryBuilder('p')
+      .leftJoinAndSelect('p.blog', 'blog');
     const allowedSortBy = [
       'id',
       'title',
@@ -45,7 +45,7 @@ export class PostsQueryRepository {
     const sortDirection =
       params.sortDirection === SortDirection.Asc ? 'ASC' : 'DESC';
 
-    let sortField = `p.@{sortBy}`;
+    let sortField = `p.${sortBy}`;
     if (sortBy === 'blogName') {
       sortField = 'blog.name';
     }
@@ -61,7 +61,7 @@ export class PostsQueryRepository {
       blogName: p.blog.name,
     }));
 
-    const items = await this.postLikesRepository.enrichPostsWithLikes(
+    const items = await this.postLikesQueryRepository.enrichPostsWithLikes(
       mappedPost,
       userId,
     );
@@ -93,7 +93,7 @@ export class PostsQueryRepository {
       ...post,
       blogName: post.blog.name,
     };
-    const items = await this.postLikesRepository.enrichPostsWithLikes(
+    const items = await this.postLikesQueryRepository.enrichPostsWithLikes(
       [mappedPost],
       userId,
     );
@@ -137,7 +137,7 @@ export class PostsQueryRepository {
       blogName: p.blog.name,
     }));
 
-    const items = await this.postLikesRepository.enrichPostsWithLikes(
+    const items = await this.postLikesQueryRepository.enrichPostsWithLikes(
       mappedPost,
       userId,
     );

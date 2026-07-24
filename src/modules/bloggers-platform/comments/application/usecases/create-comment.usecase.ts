@@ -2,7 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
 import { PostsRepository } from '../../../posts/infrastructure/posts.repository';
 import { CreateCommentDto } from '../../dto/create-comment.dto';
-import { CommentSqlEntity } from '../../domain/comment.entity';
+import { CommentEntity } from '../../domain/comment.entity';
 
 export class CreateCommentCommand {
   constructor(
@@ -27,27 +27,14 @@ export class CreateCommentUseCase
     postId,
     userId,
   }: CreateCommentCommand): Promise<string> {
-    // 1. Проверяем, что пост существует
     await this.postsRepository.checkPostExistsOrError(postId);
+    const comment = new CommentEntity();
+    comment.id = crypto.randomUUID();
+    comment.postId = postId;
+    comment.content = input.content;
+    comment.userId = userId;
 
-    // 2. Создаём SQL‑сущность комментария
-    const now = new Date().toISOString();
-    const comment: CommentSqlEntity = {
-      id: crypto.randomUUID(),
-      postId,
-      content: input.content,
-      userId,
-      likesCount: 0,
-      dislikesCount: 0,
-      createdAt: now,
-      updatedAt: now,
-      deletedAt: null,
-    };
-
-    // 3. Сохраняем
-    await this.commentsRepository.createComment(comment);
-
-    // 4. Возвращаем id
+    await this.commentsRepository.save(comment);
     return comment.id;
   }
 }

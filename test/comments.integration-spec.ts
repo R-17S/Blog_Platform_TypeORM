@@ -7,7 +7,6 @@ import {
 import { CommentsRepository } from '../src/modules/bloggers-platform/comments/infrastructure/comments.repository';
 import { UsersTestManager } from './helpers/users-test-manager';
 import { initSettings } from './helpers/init-settings';
-import { deleteAllData } from './helpers/delete-all-data';
 
 import {
   CreateCommentCommand,
@@ -35,6 +34,8 @@ import {
   DeleteCommentCommand,
   DeleteCommentUseCase,
 } from '../src/modules/bloggers-platform/comments/application/usecases/delete-comment.usecase';
+import { TestingService } from '../src/modules/testing/ application/testing.service';
+import { PostEntity } from '../src/modules/bloggers-platform/posts/domain/post.entity';
 
 describe('comments', () => {
   let app: INestApplication;
@@ -49,6 +50,7 @@ describe('comments', () => {
   let updateCommentLikeStatusUseCase: UpdateCommentLikeStatusUseCase;
   let commentLikesRepository: CommentLikesRepository;
   let deleteCommentUseCase: DeleteCommentUseCase;
+  let testingService: TestingService;
 
   beforeAll(async () => {
     const result = await initSettings();
@@ -64,13 +66,14 @@ describe('comments', () => {
     updateCommentLikeStatusUseCase = app.get(UpdateCommentLikeStatusUseCase);
     commentLikesRepository = app.get(CommentLikesRepository);
     deleteCommentUseCase = app.get(DeleteCommentUseCase);
+    testingService = app.get(TestingService);
   });
   afterAll(async () => {
     await app.close();
   });
 
   beforeEach(async () => {
-    await deleteAllData(app);
+    await testingService.clearDatabase();
   });
 
   async function seedBlogAndPost() {
@@ -81,18 +84,13 @@ describe('comments', () => {
     };
     const blogId = await createBlogUseCase.execute(new CreateBlogCommand(dto));
     const postId = crypto.randomUUID();
-    await postsRepository.createPost({
-      id: postId,
-      title: 'title',
-      shortDescription: 'shortDesc',
-      content: 'content',
-      blogId: blogId,
-      likesCount: 0,
-      dislikesCount: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      deletedAt: null,
-    });
+    const initialPost = new PostEntity();
+    initialPost.id = postId;
+    initialPost.title = 'title';
+    initialPost.shortDescription = 'shortDesc';
+    initialPost.content = 'content';
+    initialPost.blogId = blogId;
+    await postsRepository.save(initialPost);
     return postId;
   }
 

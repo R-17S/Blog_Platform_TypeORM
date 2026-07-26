@@ -35,9 +35,8 @@ export class UpdateCommentUseCase
       });
     }
 
-    const updated = new CommentEntity();
     comment.content = input.content;
 
-    await this.commentsRepository.save(updated);
+    await this.commentsRepository.save(comment);
   }
 }

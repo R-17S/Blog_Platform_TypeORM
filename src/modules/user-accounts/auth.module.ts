@@ -26,12 +26,14 @@ import { RefreshTokensUseCase } from './application/usecases/refresh-token.useca
 import { PassportModule } from '@nestjs/passport';
 import { CoreConfig } from '../../core/core.config';
 import { UserAccountsConfig } from './config/user-accounts.config';
-import { PgModule } from '../../pg.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserEntity } from './domain/user.entity';
+import { SecurityDeviceEntity } from './domain/securityDevices.entity';
 
 @Module({
   imports: [
-    PgModule,
     CqrsModule,
+    TypeOrmModule.forFeature([UserEntity, SecurityDeviceEntity]),
     JwtModule,
     UserAccountsModule,
     EmailModule,

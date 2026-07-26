@@ -9,6 +9,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { CommentEntity } from './comment.entity';
+import { UserEntity } from '../../../user-accounts/domain/user.entity';
 
 @Entity({ name: 'CommentLikes' })
 export class CommentLikeEntity {
@@ -33,9 +34,9 @@ export class CommentLikeEntity {
   })
   status: string;
 
-  @CreateDateColumn({ type: 'timestamp without time zone' })
+  @CreateDateColumn({ type: 'timestamp with time zone' })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamp without time zone' })
+  @UpdateDateColumn({ type: 'timestamp with time zone' })
   updatedAt: Date;
 }

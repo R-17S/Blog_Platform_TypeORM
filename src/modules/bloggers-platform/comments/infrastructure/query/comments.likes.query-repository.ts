@@ -17,10 +17,12 @@ export class CommentLikesQueryRepository {
   ): Promise<Record<string, LikeStatusTypes>> {
     if (commentIds.length === 0) return {};
 
-    const rows = await this.commentLikesRepository.query<{
-      commentId: string;
-      status: LikeStatusTypes;
-    }>(
+    const rows = await this.commentLikesRepository.query<
+      {
+        commentId: string;
+        status: LikeStatusTypes;
+      }[]
+    >(
       `
       SELECT "commentId", "status"
       FROM "CommentLikes"
@@ -41,10 +43,12 @@ export class CommentLikesQueryRepository {
   ): Promise<Record<string, number>> {
     if (commentIds.length === 0) return {};
 
-    const result = await this.commentLikesRepository.query<{
-      commentId: string;
-      count: string;
-    }>(
+    const result = await this.commentLikesRepository.query<
+      {
+        commentId: string;
+        count: string;
+      }[]
+    >(
       `
       SELECT "commentId", COUNT(*) AS count
       FROM "CommentLikes"
@@ -66,10 +70,12 @@ export class CommentLikesQueryRepository {
   ): Promise<Record<string, number>> {
     if (commentIds.length === 0) return {};
 
-    const result = await this.commentLikesRepository.query<{
-      commentId: string;
-      count: string;
-    }>(
+    const result = await this.commentLikesRepository.query<
+      {
+        commentId: string;
+        count: string;
+      }[]
+    >(
       `
       SELECT "commentId", COUNT(*) AS count
       FROM "CommentLikes"

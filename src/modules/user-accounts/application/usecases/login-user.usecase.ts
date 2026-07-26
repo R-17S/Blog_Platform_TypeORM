@@ -7,12 +7,15 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'node:crypto';
 import { SecurityDevicesRepository } from '../../infrastructure/devices.repositories';
-import { UserSqlEntity } from '../../domain/user.entity';
-import { SecurityDeviceSqlEntity } from '../../domain/securityDevices.entity';
+import { UserEntity } from '../../domain/user.entity';
+import {
+  SecurityDeviceEntity,
+  SecurityDeviceSqlEntity,
+} from '../../domain/securityDevices.entity';
 
 export class LoginUserCommand {
   constructor(
-    public readonly user: UserSqlEntity,
+    public readonly user: UserEntity,
     public readonly ip: string,
     public readonly title: string,
   ) {}
@@ -39,38 +42,25 @@ export class LoginUserUseCase implements ICommandHandler<LoginUserCommand> {
       deviceId,
     });
 
-    const payload = this.refreshTokenContext.decode<{ iat: number }>(refreshToken);
+    const payload = this.refreshTokenContext.decode<{ iat: number }>(
+      refreshToken,
+    );
     const lastActiveDate = new Date(payload.iat * 1000);
 
-    const device: SecurityDeviceSqlEntity = {
-      id: randomUUID(),
-      userId,
-      deviceId,
-      ip,
-      title,
-      lastActiveDate: lastActiveDate.toISOString(),
-      createdAt: new Date().toISOString(),
-    };
+    const device = new SecurityDeviceEntity();
+    device.id = randomUUID();
+    device.userId = userId;
+    device.deviceId = deviceId;
+    device.ip = ip;
+    device.title = title;
+    device.lastActiveDate = lastActiveDate;
 
-    try {
-      await this.securityDevicesRepository.create(device);
-      console.log('🔥 Сессия создана успешно!');
-    } catch (dbError) {
-      console.error('🔥 Ошибка при создании сессии в базе данных:', dbError);
-    }
-    let accessToken: string;
-    try {
-      // 2. Присваиваем значение внутри try (уже БЕЗ слова const)
-      accessToken = this.accessTokenContext.sign({
-        id: userId,
-        login: user.login,
-      });
-      console.log('Куда ты делся', accessToken);
-    } catch (e) {
-      console.error('🔥 Ошибка генерации accessToken:', e);
-      throw e;
-    }
+    await this.securityDevicesRepository.save(device);
+    const accessToken = this.accessTokenContext.sign({
+      id: userId,
+      login: user.login,
+    });
+
     return { accessToken, refreshToken };
-
   }
 }

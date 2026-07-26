@@ -7,8 +7,8 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { LikeStatusTypes } from '../api/view-dto/posts.view-dto';
-import { CommentEntity } from '../../comments/domain/comment.entity';
 import { PostEntity } from './post.entity';
+import { UserEntity } from '../../../user-accounts/domain/user.entity';
 
 @Entity({ name: 'PostLikes' })
 export class PostLikesEntity {

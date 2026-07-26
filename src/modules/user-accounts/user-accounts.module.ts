@@ -12,10 +12,15 @@ import { SecurityDevicesController } from './api/security-devices.controller';
 import { DeleteDeviceByIdUseCase } from './application/usecases/security-devices/delete-device-by-id.usecase';
 import { DeleteAllDevicesExceptCurrentUseCase } from './application/usecases/security-devices/delete-all-devices-except-current.usecase';
 import { UserAccountsConfig } from './config/user-accounts.config';
-import { PgModule } from '../../pg.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserEntity } from './domain/user.entity';
+import { SecurityDeviceEntity } from './domain/securityDevices.entity';
 
 @Module({
-  imports: [CqrsModule, PgModule],
+  imports: [
+    CqrsModule,
+    TypeOrmModule.forFeature([UserEntity, SecurityDeviceEntity]),
+  ],
   controllers: [UsersController, SecurityDevicesController],
   providers: [
     //

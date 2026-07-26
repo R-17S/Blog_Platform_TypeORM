@@ -17,7 +17,8 @@ export class LogoutUserUseCase implements ICommandHandler<LogoutUserCommand> {
     const { id: userId, deviceId } = payload;
 
     // 1. Ищем устройство
-    const device = await this.securityDevicesRepository.findByDeviceId(deviceId);
+    const device =
+      await this.securityDevicesRepository.findByDeviceId(deviceId);
     if (!device)
       throw new DomainException({
         code: DomainExceptionCode.Unauthorized,

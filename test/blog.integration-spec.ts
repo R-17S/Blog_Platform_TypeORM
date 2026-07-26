@@ -1,6 +1,5 @@
 import { INestApplication } from '@nestjs/common';
 import { initSettings } from './helpers/init-settings';
-import { deleteAllData } from './helpers/delete-all-data';
 import { BlogsRepository } from '../src/modules/bloggers-platform/blogs/infrastructure/blogs.repository';
 import { PostsRepository } from '../src/modules/bloggers-platform/posts/infrastructure/posts.repository';
 import {
@@ -26,6 +25,7 @@ import {
 import { DomainException } from '../src/core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../src/core/exceptions/domain-exception-codes';
 import { PostEntity } from '../src/modules/bloggers-platform/posts/domain/post.entity';
+import { TestingService } from '../src/modules/testing/ application/testing.service';
 
 describe('blogs', () => {
   let app: INestApplication;
@@ -36,6 +36,7 @@ describe('blogs', () => {
   let deleteBlogUseCase: DeleteBlogUseCase;
   let updatePostByBlogIdUseCase: UpdatePostByBlogIdUseCase;
   let deletePostByBlogIdUseCase: DeletePostByBlogIdUseCase;
+  let testingService: TestingService;
 
   beforeAll(async () => {
     const result = await initSettings();
@@ -47,6 +48,7 @@ describe('blogs', () => {
     deleteBlogUseCase = app.get(DeleteBlogUseCase);
     updatePostByBlogIdUseCase = app.get(UpdatePostByBlogIdUseCase);
     deletePostByBlogIdUseCase = app.get(DeletePostByBlogIdUseCase);
+    testingService = app.get(TestingService);
   });
 
   afterAll(async () => {
@@ -54,7 +56,7 @@ describe('blogs', () => {
   });
 
   beforeEach(async () => {
-    await deleteAllData(app);
+    await testingService.clearDatabase();
   });
 
   const dto = {
@@ -125,19 +127,13 @@ describe('blogs', () => {
   it('should successfully update a post belonging to correct blog', async () => {
     const blogId = await createBlogUseCase.execute(new CreateBlogCommand(dto));
     const postId = crypto.randomUUID();
-    const initialPost: PostEntity = {
-      id: postId,
-      title: 'title',
-      shortDescription: 'shortDesc',
-      content: 'content',
-      blogId: blogId,
-      likesCount: 0,
-      dislikesCount: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      deletedAt: null,
-    };
-    await postsRepository.createPost(initialPost);
+    const initialPost = new PostEntity();
+    initialPost.id = postId;
+    initialPost.title = 'title';
+    initialPost.shortDescription = 'shortDesc';
+    initialPost.content = 'content';
+    initialPost.blogId = blogId;
+    await postsRepository.save(initialPost);
     const updateDto = {
       title: 'updated title',
       shortDescription: 'updated title',
@@ -156,19 +152,14 @@ describe('blogs', () => {
       new CreateBlogCommand(dto_2),
     );
     const postId = crypto.randomUUID();
-    const initialPost: PostEntity = {
-      id: postId,
-      title: 'title',
-      shortDescription: 'shortDesc',
-      content: 'content',
-      blogId: blogId,
-      likesCount: 0,
-      dislikesCount: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      deletedAt: null,
-    };
-    await postsRepository.createPost(initialPost);
+    const initialPost = new PostEntity();
+    initialPost.id = postId;
+    initialPost.title = 'title';
+    initialPost.shortDescription = 'shortDesc';
+    initialPost.content = 'content';
+    initialPost.blogId = blogId;
+
+    await postsRepository.save(initialPost);
     const updateDto = {
       title: 'updated title',
       shortDescription: 'updated title',
@@ -189,19 +180,13 @@ describe('blogs', () => {
   it('should successfully soft-delete a post within a blog', async () => {
     const blogId = await createBlogUseCase.execute(new CreateBlogCommand(dto));
     const postId = crypto.randomUUID();
-    const initialPost: PostEntity = {
-      id: postId,
-      title: 'title',
-      shortDescription: 'shortDesc',
-      content: 'content',
-      blogId: blogId,
-      likesCount: 0,
-      dislikesCount: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      deletedAt: null,
-    };
-    await postsRepository.createPost(initialPost);
+    const initialPost = new PostEntity();
+    initialPost.id = postId;
+    initialPost.title = 'title';
+    initialPost.shortDescription = 'shortDesc';
+    initialPost.content = 'content';
+    initialPost.blogId = blogId;
+    await postsRepository.save(initialPost);
     await deletePostByBlogIdUseCase.execute(
       new DeletePostByBlogIdCommand(blogId, postId),
     );

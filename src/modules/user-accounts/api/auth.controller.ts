@@ -16,7 +16,6 @@ import { PasswordRecoveryDto } from './input-dto/passwordRecovery.input-dto';
 import { NewPasswordDto } from './input-dto/newPassword.input-dto';
 import { RegistrationConfirmationDto } from './input-dto/registrationConfirmation.input-dto';
 import { EmailResendingDto } from './input-dto/emailResending.input-dto';
-import type { UserSqlEntity } from '../domain/user.entity';
 import type { Request, Response } from 'express';
 import { PasswordRecoveryCommand } from '../application/usecases/users/password-recovery.usecase';
 import { NewPasswordCommand } from '../application/usecases/users/new-password.usecase';
@@ -35,6 +34,7 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { UserContextDto } from '../guards/dto/user-context.dto';
 import { MeViewDto } from './view-dto/users.view-dto';
 import { AuthQueryRepository } from '../infrastructure/query/auth.query-repository';
+import { UserEntity } from '../domain/user.entity';
 
 @Controller('auth')
 export class AuthController {
@@ -48,7 +48,7 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   async login(
     @Req() req: Request,
-    @ExtractUserFromRequest() user: UserSqlEntity,
+    @ExtractUserFromRequest() user: UserEntity,
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ accessToken: string }> {
     //console.log('🔥 [Controller] login called with:', user.id);

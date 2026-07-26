@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   UsersViewPaginated,
   UserViewModel,
@@ -6,28 +6,37 @@ import {
 import { UserInputQuery } from '../../api/input-dto/get-users-query-params.input-dto';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
-import { Pool } from 'pg';
 import { SortDirection } from '../../../../core/dto/base.query-params.input-dto';
-import { UserSqlEntity } from '../../domain/user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { UserEntity } from '../../domain/user.entity';
 
 @Injectable()
 export class UsersQueryRepository {
-  constructor(@Inject('PG_POOL') private readonly pool: Pool) {}
+  constructor(
+    @InjectRepository(UserEntity)
+    private readonly usersTypeOrmRepository: Repository<UserEntity>,
+  ) {}
 
   async getAllUsers(params: UserInputQuery): Promise<UsersViewPaginated> {
-    const values: any[] = [];
-    let where = `WHERE "deletedAt" IS NULL`;
+    const queryBuilder = this.usersTypeOrmRepository.createQueryBuilder('u');
 
     if (params.searchLoginTerm && params.searchEmailTerm) {
-      values.push(`%${params.searchLoginTerm}%`);
-      values.push(`%${params.searchEmailTerm}%`);
-      where += ` AND (login ILIKE $${values.length - 1} OR email ILIKE $${values.length})`;
+      queryBuilder.andWhere(
+        '(u.login ILIKE :loginTerm OR u.email ILIKE :emailTerm)',
+        {
+          loginTerm: `%${params.searchLoginTerm}%`,
+          emailTerm: `%${params.searchEmailTerm}%`,
+        },
+      );
     } else if (params.searchLoginTerm) {
-      values.push(`%${params.searchLoginTerm}%`);
-      where += ` AND login ILIKE $${values.length}`;
+      queryBuilder.andWhere('u.login ILIKE :loginTerm', {
+        loginTerm: `%${params.searchLoginTerm}%`,
+      });
     } else if (params.searchEmailTerm) {
-      values.push(`%${params.searchEmailTerm}%`);
-      where += ` AND email ILIKE $${values.length}`;
+      queryBuilder.andWhere('u.email ILIKE :emailTerm', {
+        emailTerm: `%${params.searchEmailTerm}%`,
+      });
     }
 
     //const sortBy = params.sortBy ?? 'createdAt'; нормальная иньекция спросить ?
@@ -39,37 +48,20 @@ export class UsersQueryRepository {
     const sortDirection =
       params.sortDirection === SortDirection.Asc ? 'ASC' : 'DESC';
 
-    const orderByClause =
-      sortBy === 'login' || sortBy === 'email'
-        ? `ORDER BY "${sortBy}" COLLATE "C" ${sortDirection}`
-        : `ORDER BY "${sortBy}" ${sortDirection}`;
+    const stringField = ['login', 'email'];
+    if (stringField.includes(sortBy)) {
+      queryBuilder.orderBy(`u.${sortBy} COLLATE "C"`, sortDirection);
+    } else {
+      queryBuilder.orderBy(`u.${sortBy}`, sortDirection);
+    }
 
     const offset = params.calculateSkip();
     const limit = params.pageSize;
+    queryBuilder.skip(offset).take(limit);
 
-    const totalCountQuery = `
-      SELECT COUNT(*) 
-      FROM "Users"
-      ${where}
-    `;
-    const totalCountResult = await this.pool.query<{ count: string }>(
-      totalCountQuery,
-      values,
-    );
-    const totalCount = Number(totalCountResult.rows[0].count);
-
-    const itemsQuery = `
-      SELECT *
-      FROM "Users"
-      ${where}
-      ${orderByClause}
-      OFFSET ${offset}
-      LIMIT ${limit}
-    `;
-    const itemsResult = await this.pool.query(itemsQuery, values);
-    // console.log(params);
+    const [users, totalCount] = await queryBuilder.getManyAndCount();
     return UsersViewPaginated.mapToView({
-      items: itemsResult.rows.map((u) => UserViewModel.mapToView(u)),
+      items: users.map((u) => UserViewModel.mapToView(u)),
       page: params.pageNumber,
       pageSize: params.pageSize,
       totalCount,
@@ -77,21 +69,17 @@ export class UsersQueryRepository {
   }
 
   async getUserByIdOrError(id: string): Promise<UserViewModel> {
-    const result = await this.pool.query<UserSqlEntity>(
-      `
-        SELECT * 
-        FROM "Users" 
-        WHERE id = $1 AND "deletedAt" IS NULL`,
-      [id],
-    );
+    const user = await this.usersTypeOrmRepository.findOne({
+      where: { id },
+    });
 
-    if (!result.rows[0]) {
+    if (!user) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
         message: 'User not found',
       });
     }
 
-    return UserViewModel.mapToView(result.rows[0]);
+    return UserViewModel.mapToView(user);
   }
 }

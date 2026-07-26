@@ -2,7 +2,6 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import { UsersTestManager } from './helpers/users-test-manager';
 import { initSettings } from './helpers/init-settings';
 import { JwtService } from '@nestjs/jwt';
-import { deleteAllData } from './helpers/delete-all-data';
 import { CreateUserDto } from '../src/modules/user-accounts/dto/create-user.dto';
 import * as request from 'supertest';
 import { GLOBAL_PREFIX } from '../src/setup/global-prefix.setup';
@@ -14,10 +13,13 @@ import {
 import { delay } from './helpers/delay';
 import { EmailService } from '../src/modules/user-accounts/application/email.service';
 import { ACCESS_TOKEN_STRATEGY_INJECT_TOKEN } from '../src/modules/user-accounts/constans/auth-tokens.inject-constants';
+import { TestingService } from '../src/modules/testing/ application/testing.service';
 
 describe('users', () => {
   let app: INestApplication;
   let userTestManager: UsersTestManager;
+  let testingService: TestingService;
+
 
   beforeAll(async () => {
     const result = await initSettings((moduleBuilder) => {
@@ -39,6 +41,7 @@ describe('users', () => {
 
     app = result.app;
     userTestManager = result.userTestManager;
+    testingService = app.get(TestingService);
   });
 
   afterAll(async () => {
@@ -46,7 +49,7 @@ describe('users', () => {
   });
 
   beforeEach(async () => {
-    await deleteAllData(app);
+    await testingService.clearDatabase();
   });
 
   it('should create user', async () => {
@@ -70,7 +73,7 @@ describe('users', () => {
     const users = await userTestManager.createSeveralUsers(12);
 
     const { body: responseBody } = (await request(app.getHttpServer())
-      .get(`/${GLOBAL_PREFIX}/users?pageNumber=2&sortDirection=asc`)
+      .get(`/${GLOBAL_PREFIX}/sa/users?pageNumber=2&sortDirection=asc`)
       .auth('admin', 'qwerty')
       .expect(HttpStatus.OK)) as { body: PaginatedViewDto<UserViewModel> };
 

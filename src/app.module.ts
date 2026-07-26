@@ -15,7 +15,6 @@ import { CoreModule } from './core/core.module';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { DomainHttpExceptionsFilter } from './core/exceptions/filters/domain-exceptions.filter';
 import { AllHttpExceptionsFilter } from './core/exceptions/filters/all-exceptions.filter';
-import { PgModule } from './pg.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 
@@ -23,7 +22,6 @@ import { ConfigService } from '@nestjs/config';
   imports: [
     configModule,
     CoreModule,
-    PgModule,
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',

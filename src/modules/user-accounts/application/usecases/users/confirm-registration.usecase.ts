@@ -33,7 +33,7 @@ export class ConfirmRegistrationUseCase
 
     if (
       user.confirmationExpiration &&
-      new Date(user.confirmationExpiration) < new Date()
+      user.confirmationExpiration < new Date()
     ) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
@@ -42,6 +42,10 @@ export class ConfirmRegistrationUseCase
       });
     }
 
-    await this.usersRepository.confirmUser(user.id);
+    user.confirmationCode = null;
+    user.isConfirmed = true;
+    user.confirmationExpiration = null;
+
+    await this.usersRepository.save(user);
   }
 }

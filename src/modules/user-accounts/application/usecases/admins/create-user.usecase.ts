@@ -4,7 +4,7 @@ import { UsersRepository } from '../../../infrastructure/users.repository';
 import { ArgonService } from '../../argon2.service';
 import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
-import { UserSqlEntity } from '../../../domain/user.entity';
+import { UserEntity } from '../../../domain/user.entity';
 
 export class CreateUserCommand {
   constructor(public readonly input: CreateUserDto) {}
@@ -34,20 +34,16 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
         extensions: [{ key: 'email', message: 'Email should be unique' }],
       });
     const passwordHash = await this.argonService.generateHash(input.password);
-    const newUser: UserSqlEntity = {
-      id: crypto.randomUUID(),
-      login: input.login,
-      email: input.email,
-      passwordHash,
-      confirmationCode: null,
-      confirmationExpiration: null,
-      isConfirmed: true, // админ создаёт сразу подтверждённого
-      recoveryCode: null,
-      recoveryExpiration: null,
-      createdAt: new Date().toISOString(),
-      deletedAt: null,
-    };
-    await this.usersRepository.createUser(newUser);
+    const newUser = new UserEntity();
+    newUser.id = crypto.randomUUID();
+    newUser.login = input.login;
+    newUser.email = input.email;
+    newUser.passwordHash = passwordHash;
+    newUser.confirmationCode = null;
+    newUser.confirmationExpiration = null;
+    newUser.isConfirmed = true; // админ создаёт сразу подтверждённого
+
+    await this.usersRepository.save(newUser);
     return newUser.id;
   }
 }

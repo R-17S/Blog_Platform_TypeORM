@@ -39,7 +39,7 @@ export class AuthService {
       return null;
     }
 
-    return user; //{ id: user._id.toString() };
+    return user;
   }
 
   async checkRefreshToken(deviceId: string, iat: number): Promise<void> {

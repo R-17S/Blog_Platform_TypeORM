@@ -8,8 +8,6 @@ import { CommentsRepository } from '../src/modules/bloggers-platform/comments/in
 import { PostLikesRepository } from '../src/modules/bloggers-platform/posts/infrastructure/post-likes.repository';
 import { UsersTestManager } from './helpers/users-test-manager';
 import { initSettings } from './helpers/init-settings';
-import { deleteAllData } from './helpers/delete-all-data';
-
 import {
   CreateCommentCommand,
   CreateCommentUseCase,
@@ -22,6 +20,8 @@ import {
 import { LikeStatusTypes } from '../src/modules/bloggers-platform/posts/api/view-dto/posts.view-dto';
 import { DomainException } from '../src/core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../src/core/exceptions/domain-exception-codes';
+import { TestingService } from '../src/modules/testing/ application/testing.service';
+import { PostEntity } from '../src/modules/bloggers-platform/posts/domain/post.entity';
 
 describe('posts', () => {
   let app: INestApplication;
@@ -33,6 +33,8 @@ describe('posts', () => {
   let createCommentUseCase: CreateCommentUseCase;
   let usersRepository: UsersRepository;
   let updatePostLikeStatusUseCase: UpdatePostLikeStatusUseCase;
+  let testingService: TestingService;
+
 
   beforeAll(async () => {
     const result = await initSettings();
@@ -45,13 +47,14 @@ describe('posts', () => {
     createCommentUseCase = app.get(CreateCommentUseCase);
     usersRepository = app.get(UsersRepository);
     updatePostLikeStatusUseCase = app.get(UpdatePostLikeStatusUseCase);
+    testingService = app.get(TestingService);
   });
   afterAll(async () => {
     await app.close();
   });
 
   beforeEach(async () => {
-    await deleteAllData(app);
+    await testingService.clearDatabase();
   });
 
   it('should successfully create a comment for a post', async () => {
@@ -63,18 +66,13 @@ describe('posts', () => {
 
     const blogId = await createBlogUseCase.execute(new CreateBlogCommand(dto));
     const postId = crypto.randomUUID();
-    await postsRepository.createPost({
-      id: postId,
-      title: 'title',
-      shortDescription: 'shortDesc',
-      content: 'content',
-      blogId: blogId,
-      likesCount: 0,
-      dislikesCount: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      deletedAt: null,
-    });
+    const initialPost = new PostEntity();
+    initialPost.id = postId;
+    initialPost.title = 'title';
+    initialPost.shortDescription = 'shortDesc';
+    initialPost.content = 'content';
+    initialPost.blogId = blogId;
+    await postsRepository.save(initialPost);
 
     await usersTestManager.createAndLoginSingleUser();
     const user = await usersRepository.findByLogin('name1');
@@ -109,18 +107,13 @@ describe('posts', () => {
 
     const blogId = await createBlogUseCase.execute(new CreateBlogCommand(dto));
     const postId = crypto.randomUUID();
-    await postsRepository.createPost({
-      id: postId,
-      title: 'title',
-      shortDescription: 'shortDesc',
-      content: 'content',
-      blogId: blogId,
-      likesCount: 0,
-      dislikesCount: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      deletedAt: null,
-    });
+    const initialPost = new PostEntity();
+    initialPost.id = postId;
+    initialPost.title = 'title';
+    initialPost.shortDescription = 'shortDesc';
+    initialPost.content = 'content';
+    initialPost.blogId = blogId;
+    await postsRepository.save(initialPost);
     await usersTestManager.createAndLoginSingleUser();
     const user = await usersRepository.findByLogin('name1');
     if (!user) {

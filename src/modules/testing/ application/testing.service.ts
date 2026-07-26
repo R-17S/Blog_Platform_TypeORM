@@ -1,13 +1,13 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { Pool } from 'pg';
+import { Injectable } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class TestingService {
-  constructor(@Inject('PG_POOL') private readonly pool: Pool) {}
+  constructor(private readonly dataSource: DataSource) {}
 
   async clearDatabase(): Promise<void> {
     // CASCADE автоматически разруливает все внешние ключи.
-    await this.pool.query(`
+    await this.dataSource.query(`
       TRUNCATE TABLE 
         "CommentLikes", 
         "PostLikes", 

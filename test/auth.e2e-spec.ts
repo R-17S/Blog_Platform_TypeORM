@@ -1,7 +1,6 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { UsersTestManager } from './helpers/users-test-manager';
 import { initSettings } from './helpers/init-settings';
-import { deleteAllData } from './helpers/delete-all-data';
 import { CreateUserDto } from '../src/modules/user-accounts/dto/create-user.dto';
 import * as request from 'supertest';
 import { GLOBAL_PREFIX } from '../src/setup/global-prefix.setup';
@@ -10,10 +9,12 @@ import { EmailService } from '../src/modules/user-accounts/application/email.ser
 import { delay } from './helpers/delay';
 import { REFRESH_TOKEN_STRATEGY_INJECT_TOKEN } from '../src/modules/user-accounts/constans/auth-tokens.inject-constants';
 import { JwtService } from '@nestjs/jwt';
+import { TestingService } from '../src/modules/testing/ application/testing.service';
 
 describe('auth', () => {
   let app: INestApplication;
   let userTestManager: UsersTestManager;
+  let testingService: TestingService;
 
   beforeAll(async () => {
     const result = await initSettings((moduleBuilder) => {
@@ -35,6 +36,7 @@ describe('auth', () => {
 
     app = result.app;
     userTestManager = result.userTestManager;
+    testingService = app.get(TestingService);
   });
 
   afterAll(async () => {
@@ -42,7 +44,7 @@ describe('auth', () => {
   });
 
   beforeEach(async () => {
-    await deleteAllData(app);
+    await testingService.clearDatabase();
   });
 
   // -----------------------------
@@ -120,8 +122,7 @@ describe('auth', () => {
   // LOGOUT
   // -----------------------------
   it('should logout and delete current device session', async () => {
-    const { accessToken, refreshToken } =
-      await userTestManager.createAndLoginSingleUser();
+    const { accessToken, refreshToken } = await userTestManager.createAndLoginSingleUser();
     await request(app.getHttpServer())
       .post(`/${GLOBAL_PREFIX}/auth/logout`)
       .set('Cookie', `refreshToken=${refreshToken}`)

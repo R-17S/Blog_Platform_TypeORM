@@ -1,13 +1,13 @@
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
-import { SecurityDeviceSqlEntity } from '../../domain/securityDevices.entity';
+import { SecurityDeviceEntity } from '../../domain/securityDevices.entity';
 
 export class DevicesViewModel {
   ip: string;
   title: string;
-  lastActiveDate: string;
+  lastActiveDate: Date;
   deviceId: string;
 
-  static mapToView(devices: SecurityDeviceSqlEntity): DevicesViewModel {
+  static mapToView(devices: SecurityDeviceEntity): DevicesViewModel {
     return {
       ip: devices.ip.toString(),
       title: devices.title,

@@ -1,23 +1,28 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { MeViewDto, UserViewModel } from '../../api/view-dto/users.view-dto';
+import { Injectable } from '@nestjs/common';
+import { MeViewDto } from '../../api/view-dto/users.view-dto';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
-import { Pool } from 'pg';
+import { UserEntity } from '../../domain/user.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class AuthQueryRepository {
-  constructor(@Inject('PG_POOL') private readonly pool: Pool) {}
+  constructor(
+    @InjectRepository(UserEntity)
+    private readonly authQueryRepository: Repository<UserEntity>,
+  ) {}
 
   async me(userId: string): Promise<MeViewDto> {
-    const result = await this.pool.query<UserViewModel>(
-      `
-    SELECT "id", "email", "login", "createdAt"
-    FROM "Users"
-    WHERE "id" = $1 AND "deletedAt" IS NULL
-    `,
-      [userId],
-    );
-    const user = result.rows[0];
+    const user = await this.authQueryRepository.findOne({
+      select: {
+        id: true,
+        email: true,
+        login: true,
+      },
+      where: { id: userId },
+    });
+
     if (!user) {
       throw new DomainException({
         code: DomainExceptionCode.Unauthorized,

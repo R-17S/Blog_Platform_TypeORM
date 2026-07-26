@@ -40,11 +40,9 @@ export class ResendRegistrationUseCase
     const newCode = randomUUID();
     const newExpirationDate = add(new Date(), { hours: 24 });
 
-    await this.usersRepository.updateConfirmationCode(
-      user.id,
-      newCode,
-      newExpirationDate,
-    );
+    user.confirmationCode = newCode;
+    user.confirmationExpiration = newExpirationDate;
+    await this.usersRepository.save(user);
     this.eventBus.publish(new RegistrationEmailRequestedEvent(email, newCode));
   }
 }

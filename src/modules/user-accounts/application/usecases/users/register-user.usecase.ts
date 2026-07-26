@@ -7,6 +7,7 @@ import { DomainExceptionCode } from '../../../../../core/exceptions/domain-excep
 import { randomUUID } from 'node:crypto';
 import { RegistrationEmailRequestedEvent } from '../../../domain/events/registration-email-requested.event';
 import { add } from 'date-fns';
+import { UserEntity } from '../../../domain/user.entity';
 
 export class RegisterUserCommand {
   constructor(public readonly input: CreateUserInputDto) {}
@@ -44,27 +45,21 @@ export class RegisterUserUseCase
     const passwordHash = await this.argonService.generateHash(input.password);
     const confirmationCode = randomUUID();
 
-    const newUser = {
-      id: randomUUID(),
-      login: input.login,
-      email: input.email,
-      passwordHash,
-      confirmationCode,
-      confirmationExpiration: add(new Date(), {
-        hours: 1,
-        minutes: 30,
-      }).toISOString(),
-      isConfirmed: false,
-      recoveryCode: null,
-      recoveryExpiration: null,
-      createdAt: new Date().toISOString(),
-      deletedAt: null,
-    };
+    const newUser = new UserEntity();
+    newUser.id = randomUUID();
+    newUser.login = input.login;
+    newUser.email = input.email;
+    newUser.passwordHash = passwordHash;
+    newUser.confirmationCode = confirmationCode;
+    newUser.confirmationExpiration = add(new Date(), {
+      hours: 1,
+      minutes: 30,
+    });
+    newUser.isConfirmed = false;
 
-    await this.usersRepository.createUser(newUser);
+    await this.usersRepository.save(newUser);
     this.eventBus.publish(
       new RegistrationEmailRequestedEvent(input.email, confirmationCode),
     );
-    //console.log('🔥 [AuthService] email sending triggered');
   }
 }

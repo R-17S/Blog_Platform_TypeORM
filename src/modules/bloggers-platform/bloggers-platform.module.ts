@@ -21,7 +21,6 @@ import { UpdateCommentLikeStatusUseCase } from './comments/application/usecases/
 import { PostLikesRepository } from './posts/infrastructure/post-likes.repository';
 import { CommentLikesRepository } from './comments/infrastructure/comment-likes.repository';
 import { CqrsModule } from '@nestjs/cqrs';
-import { PgModule } from '../../pg.module';
 import { UpdatePostByBlogIdUseCase } from './blogs/application/usecases/update-postByBlogId.usecase';
 import { DeletePostByBlogIdUseCase } from './blogs/application/usecases/delete-postByBlogId.usecase';
 import { UpdatePostUseCase } from './posts/application/usecases/update-post.usecase';
@@ -32,12 +31,19 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { BlogEntity } from './blogs/domain/blog.entity';
 import { PostEntity } from './posts/domain/post.entity';
 import { PostLikesEntity } from './posts/domain/post.like-entity';
+import { CommentEntity } from './comments/domain/comment.entity';
+import { CommentLikeEntity } from './comments/domain/comment.like-entity';
 
 @Module({
   imports: [
     CqrsModule,
-    PgModule,
-    TypeOrmModule.forFeature([BlogEntity, PostEntity, PostLikesEntity, ]),
+    TypeOrmModule.forFeature([
+      BlogEntity,
+      PostEntity,
+      PostLikesEntity,
+      CommentEntity,
+      CommentLikeEntity,
+    ]),
   ],
   controllers: [
     BlogsController,

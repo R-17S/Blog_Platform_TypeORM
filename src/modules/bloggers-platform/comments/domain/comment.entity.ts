@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { PostEntity } from '../../posts/domain/post.entity';
+import { UserEntity } from '../../../user-accounts/domain/user.entity';
 
 @Entity({ name: 'Comments' })
 export class CommentEntity {
@@ -38,12 +39,12 @@ export class CommentEntity {
   @Column({ type: 'integer', default: 0 })
   dislikesCount: number;
 
-  @CreateDateColumn({ type: 'timestamp without time zone' })
+  @CreateDateColumn({ type: 'timestamp with time zone' })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamp without time zone' })
+  @UpdateDateColumn({ type: 'timestamp with time zone' })
   updatedAt: Date;
 
-  @DeleteDateColumn({ type: 'timestamp without time zone', nullable: true })
+  @DeleteDateColumn({ type: 'timestamp with time zone', nullable: true })
   deletedAt: Date | null;
 }

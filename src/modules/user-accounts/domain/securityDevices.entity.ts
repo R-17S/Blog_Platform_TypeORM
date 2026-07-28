@@ -8,17 +8,9 @@ import {
 } from 'typeorm';
 import { UserEntity } from './user.entity';
 
-export type SecurityDeviceSqlEntity = {
-  id: string;
-  userId: string;
-  deviceId: string;
-  ip: string;
-  title: string;
-  lastActiveDate: string; // или Date, если будешь маппить
-  createdAt: string;
-};
 
-@Entity({ name: 'SecurityDevice' })
+
+@Entity({ name: 'SecurityDevices' })
 export class SecurityDeviceEntity {
   @PrimaryColumn({ type: 'uuid' })
   id: string;

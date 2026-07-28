@@ -8,10 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'node:crypto';
 import { SecurityDevicesRepository } from '../../infrastructure/devices.repositories';
 import { UserEntity } from '../../domain/user.entity';
-import {
-  SecurityDeviceEntity,
-  SecurityDeviceSqlEntity,
-} from '../../domain/securityDevices.entity';
+import { SecurityDeviceEntity } from '../../domain/securityDevices.entity';
 
 export class LoginUserCommand {
   constructor(

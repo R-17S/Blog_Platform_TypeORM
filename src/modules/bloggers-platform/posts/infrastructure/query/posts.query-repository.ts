@@ -107,7 +107,7 @@ export class PostsQueryRepository {
   ): Promise<PostsViewPaginated> {
     const queryBuilder = this.postsTypeOrmRepository.createQueryBuilder('p');
     queryBuilder.leftJoinAndSelect('p.blog', 'blog');
-    queryBuilder.where('p.blogId = : blogId', { blogId: id });
+    queryBuilder.where('p.blogId = :blogId', { blogId: id });
 
     const allowedSortBy = [
       'id',
@@ -123,12 +123,14 @@ export class PostsQueryRepository {
       ? params.sortBy
       : 'createdAt';
 
+    const sortField = sortBy === 'blogName' ? 'blog.name' : `p.${sortBy}`;
+
     const sortDirection =
       params.sortDirection === SortDirection.Asc ? 'ASC' : 'DESC';
 
     const offset = params.calculateSkip();
     const limit = params.pageSize;
-    queryBuilder.orderBy(`p.${sortBy}`, sortDirection);
+    queryBuilder.orderBy(`${sortField}`, sortDirection);
     queryBuilder.skip(offset).take(limit);
     const [posts, totalCount] = await queryBuilder.getManyAndCount();
 

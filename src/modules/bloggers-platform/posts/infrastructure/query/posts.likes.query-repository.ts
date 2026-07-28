@@ -98,8 +98,7 @@ export class PostLikesQueryRepository {
          pl."createdAt",
          ROW_NUMBER () OVER ( --Присваиваем каждому лайку порядковый номер (1, 2, 3...) внутри его группы
            PARTITION BY pl."postId" --оконная функция которая разбивет всю таблицу лайков на изолир группы по индификатору (postId)
-           ORDER BY pl."createdAt" DESC
-           --тут просто сортируем по свежести
+           ORDER BY pl."createdAt" DESC --тут просто сортируем по свежести
            ) AS rn
          FROM "PostLikes" pl
          INNER JOIN "Users" u ON pl."userId" = u.id

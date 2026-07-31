@@ -27,17 +27,7 @@ export class LogoutUserUseCase implements ICommandHandler<LogoutUserCommand> {
       });
 
     // 2. Проверяем принадлежность устройства пользователю
-    if (device.userId !== userId)
-      throw new DomainException({
-        code: DomainExceptionCode.Unauthorized,
-        message: 'Device does not belong to this user',
-        extensions: [
-          {
-            key: 'payload.deviceId',
-            message: 'Device does not belong to this user',
-          },
-        ],
-      });
+    device.checkOwnershipOrError(userId);
 
     // 3. Удаляем устройство (logout)
     await this.securityDevicesRepository.deleteDevice(deviceId);

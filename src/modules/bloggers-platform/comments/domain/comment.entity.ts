@@ -10,6 +10,8 @@ import {
 } from 'typeorm';
 import { PostEntity } from '../../posts/domain/post.entity';
 import { UserEntity } from '../../../user-accounts/domain/user.entity';
+import { DomainException } from '../../../../core/exceptions/domain-exceptions';
+import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 
 @Entity({ name: 'Comments' })
 export class CommentEntity {
@@ -47,4 +49,32 @@ export class CommentEntity {
 
   @DeleteDateColumn({ type: 'timestamp with time zone', nullable: true })
   deletedAt: Date | null;
+
+  static create(input: {
+    postId: string;
+    userId: string;
+    content: string;
+  }): CommentEntity {
+    const comment = new CommentEntity();
+    comment.id = crypto.randomUUID();
+    comment.postId = input.postId;
+    comment.userId = input.userId;
+    comment.content = input.content;
+    comment.likesCount = 0;
+    comment.dislikesCount = 0;
+    return comment;
+  }
+
+  updateContent(content: string): void {
+    this.content = content;
+  }
+
+  checkOwnerOrError(userId: string): void {
+    if (this.userId !== userId) {
+      throw new DomainException({
+        code: DomainExceptionCode.Forbidden,
+        message: 'You cannot edit this comment',
+      });
+    }
+  }
 }

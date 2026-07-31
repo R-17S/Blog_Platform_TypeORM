@@ -42,12 +42,16 @@ export class UpdateCommentLikeStatusUseCase
       return;
     }
 
-    const status = existing ?? new CommentLikeEntity();
-
-    status.commentId = commentId;
-    status.userId = userId;
-    status.status = likeStatus;
-
-    await this.commentLikesRepository.save(status);
+    if (existing) {
+      existing.changeStatus(likeStatus);
+      await this.commentLikesRepository.save(existing);
+    } else {
+      const newLike = CommentLikeEntity.create(
+        commentId,
+        userId,
+        likeStatus,
+      );
+      await this.commentLikesRepository.save(newLike);
+    }
   }
 }

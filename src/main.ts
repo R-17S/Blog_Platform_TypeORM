@@ -2,7 +2,6 @@ import { NestFactory } from '@nestjs/core';
 import { appSetup } from './setup/app.setup';
 import { config } from 'dotenv';
 import { CoreConfig } from './core/core.config';
-
 import { initAppModule } from './init-app-module';
 
 const result = config();

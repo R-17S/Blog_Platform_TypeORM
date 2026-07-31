@@ -34,14 +34,11 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
         extensions: [{ key: 'email', message: 'Email should be unique' }],
       });
     const passwordHash = await this.argonService.generateHash(input.password);
-    const newUser = new UserEntity();
-    newUser.id = crypto.randomUUID();
-    newUser.login = input.login;
-    newUser.email = input.email;
-    newUser.passwordHash = passwordHash;
-    newUser.confirmationCode = null;
-    newUser.confirmationExpiration = null;
-    newUser.isConfirmed = true; // админ создаёт сразу подтверждённого
+    const newUser = UserEntity.createByAdmin({
+      login: input.login,
+      email: input.email,
+      passwordHash,
+    });
 
     await this.usersRepository.save(newUser);
     return newUser.id;

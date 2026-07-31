@@ -28,11 +28,11 @@ export class CreateCommentUseCase
     userId,
   }: CreateCommentCommand): Promise<string> {
     await this.postsRepository.checkPostExistsOrError(postId);
-    const comment = new CommentEntity();
-    comment.id = crypto.randomUUID();
-    comment.postId = postId;
-    comment.content = input.content;
-    comment.userId = userId;
+    const comment = CommentEntity.create({
+      postId,
+      userId,
+      content: input.content,
+    });
 
     await this.commentsRepository.save(comment);
     return comment.id;

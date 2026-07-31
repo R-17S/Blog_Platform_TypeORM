@@ -35,4 +35,21 @@ export class PostLikesEntity {
 
   @CreateDateColumn({ type: 'timestamp with time zone' })
   createdAt: Date;
+
+
+  static create(
+    postId: string,
+    userId: string,
+    status: string,
+  ): PostLikesEntity {
+    const like = new PostLikesEntity();
+    like.postId = postId;
+    like.userId = userId;
+    like.status = status;
+    return like;
+  }
+
+  changeStatus(newStatus: string): void {
+    this.status = newStatus;
+  }
 }

@@ -14,13 +14,7 @@ export class CreateBlogUseCase
   constructor(private readonly blogsRepository: BlogsRepository) {}
 
   async execute({ input }: CreateBlogCommand): Promise<string> {
-    const newBlog = new BlogEntity();
-    newBlog.id = crypto.randomUUID();
-    newBlog.name = input.name;
-    newBlog.description = input.description;
-    newBlog.websiteUrl = input.websiteUrl;
-    newBlog.isMembership = false;
-
+    const newBlog = BlogEntity.create(input);
     await this.blogsRepository.save(newBlog);
     return newBlog.id;
   }

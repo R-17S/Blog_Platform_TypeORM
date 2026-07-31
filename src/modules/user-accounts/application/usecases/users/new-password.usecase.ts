@@ -32,22 +32,8 @@ export class NewPasswordUserUseCase
         extensions: [{ key: 'code', message: 'Invalid recovery code' }],
       });
     }
-
-    if (
-      user.recoveryExpiration &&
-      user.recoveryExpiration < new Date()
-    ) {
-      throw new DomainException({
-        code: DomainExceptionCode.BadRequest,
-        message: 'Recovery code expired',
-        extensions: [{ key: 'code', message: 'Recovery code expired' }],
-      });
-    }
-
     const newHash = await this.argonService.generateHash(newPassword);
-    user.passwordHash = newHash;
-    user.recoveryCode = null;
-    user.recoveryExpiration = null;
+    user.updatePassword(newHash);
     await this.usersRepository.save(user);
   }
 }

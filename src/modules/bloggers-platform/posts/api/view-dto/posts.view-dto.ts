@@ -1,5 +1,4 @@
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
-import { PostEntity } from '../../domain/post.entity';
 
 export enum LikeStatusTypes {
   Like = 'Like',
@@ -7,9 +6,19 @@ export enum LikeStatusTypes {
   None = 'None',
 }
 
-export type PostWithBlogNameSqlEntity = PostEntity & {
+export interface PostWithBlogNameSqlEntity {
+  id: string;
+  title: string;
+  shortDescription: string;
+  content: string;
+  blogId: string;
   blogName: string;
-};
+  likesCount: number;
+  dislikesCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
 export class PostViewModel {
   id: string;
   title: string;

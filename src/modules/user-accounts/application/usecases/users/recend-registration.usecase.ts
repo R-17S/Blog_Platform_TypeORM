@@ -28,20 +28,11 @@ export class ResendRegistrationUseCase
         extensions: [{ key: 'email', message: 'Invalid confirmation code' }],
       });
     }
-
-    if (user.isConfirmed) {
-      throw new DomainException({
-        code: DomainExceptionCode.BadRequest,
-        message: 'Email already confirmed',
-        extensions: [{ key: 'email', message: 'Email already confirmed' }],
-      });
-    }
-
+    
     const newCode = randomUUID();
     const newExpirationDate = add(new Date(), { hours: 24 });
 
-    user.confirmationCode = newCode;
-    user.confirmationExpiration = newExpirationDate;
+    user.updateConfirmationCode(newCode, newExpirationDate);
     await this.usersRepository.save(user);
     this.eventBus.publish(new RegistrationEmailRequestedEvent(email, newCode));
   }

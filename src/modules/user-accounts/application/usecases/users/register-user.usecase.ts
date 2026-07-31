@@ -45,18 +45,11 @@ export class RegisterUserUseCase
     const passwordHash = await this.argonService.generateHash(input.password);
     const confirmationCode = randomUUID();
 
-    const newUser = new UserEntity();
-    newUser.id = randomUUID();
-    newUser.login = input.login;
-    newUser.email = input.email;
-    newUser.passwordHash = passwordHash;
-    newUser.confirmationCode = confirmationCode;
-    newUser.confirmationExpiration = add(new Date(), {
-      hours: 1,
-      minutes: 30,
+    const newUser = UserEntity.createForRegistration({
+      login: input.login,
+      email: input.email,
+      passwordHash,
     });
-    newUser.isConfirmed = false;
-
     await this.usersRepository.save(newUser);
     this.eventBus.publish(
       new RegistrationEmailRequestedEvent(input.email, confirmationCode),

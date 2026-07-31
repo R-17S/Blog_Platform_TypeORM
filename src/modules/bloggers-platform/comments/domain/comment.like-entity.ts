@@ -39,4 +39,21 @@ export class CommentLikeEntity {
 
   @UpdateDateColumn({ type: 'timestamp with time zone' })
   updatedAt: Date;
+
+  static create(
+    commentId: string,
+    userId: string,
+    status: string,
+  ): CommentLikeEntity {
+    const like = new CommentLikeEntity();
+    like.commentId = commentId;
+    like.userId = userId;
+    like.status = status;
+    return like;
+  }
+
+
+  changeStatus(newStatus: string): void {
+    this.status = newStatus;
+  }
 }

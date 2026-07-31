@@ -27,9 +27,7 @@ export class UpdateBlogUseCase
       });
 
     // 2. Создаём обновлённый объект
-    blog.name = input.name;
-    blog.description = input.description;
-    blog.websiteUrl = input.websiteUrl;
+    blog.update(input);
 
     // 3. Сохраняем
     await this.blogsRepository.save(blog);

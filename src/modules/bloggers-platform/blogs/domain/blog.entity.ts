@@ -6,6 +6,7 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { create } from 'node:domain';
 
 @Entity({ name: 'Blogs' })
 export class BlogEntity {
@@ -32,4 +33,28 @@ export class BlogEntity {
 
   @DeleteDateColumn({ type: 'timestamp with time zone', nullable: true })
   deletedAt: Date | null;
+
+  static create(input: {
+    name: string;
+    description: string;
+    websiteUrl: string;
+  }): BlogEntity {
+    const blog = new BlogEntity();
+    blog.id = crypto.randomUUID();
+    blog.name = input.name;
+    blog.description = input.description;
+    blog.websiteUrl = input.websiteUrl;
+    blog.isMembership = false;
+    return blog;
+  }
+
+  update(input: {
+    name: string;
+    description: string;
+    websiteUrl: string;
+  }): void {
+    this.name = input.name;
+    this.description = input.description;
+    this.websiteUrl = input.websiteUrl;
+  }
 }

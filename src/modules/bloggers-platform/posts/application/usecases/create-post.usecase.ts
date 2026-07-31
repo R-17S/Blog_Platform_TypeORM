@@ -22,20 +22,9 @@ export class CreatePostUseCase
   ) {}
 
   async execute(command: CreatePostCommand): Promise<string> {
-    const { title, shortDescription, content, blogId } = command;
-    await this.blogsRepository.checkBlogExistsOrError(blogId);
-
-    const newPost = new PostEntity();
-    newPost.id = crypto.randomUUID();
-    newPost.title = title;
-    newPost.shortDescription = shortDescription;
-    newPost.content = content;
-    newPost.blogId = blogId;
-
-    // 3. Сохраняем в базе
+    await this.blogsRepository.checkBlogExistsOrError(command.blogId);
+    const newPost = PostEntity.create(command);
     await this.postsRepository.save(newPost);
-
-    // 4. Возвращаем id
     return newPost.id;
   }
 }

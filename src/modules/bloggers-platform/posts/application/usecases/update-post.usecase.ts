@@ -30,16 +30,9 @@ export class UpdatePostUseCase
         message: 'Post not found',
       });
     }
-
     // 2. Проверяем, что блог существует
     await this.blogsRepository.checkBlogExistsOrError(input.blogId);
-
-    // 3. Обновляем поля
-    post.title = input.title;
-    post.shortDescription = input.shortDescription;
-    post.content = input.content;
-    post.blogId = input.blogId;
-
+    post.update(input);
     // 6. Сохраняем
     await this.postsRepository.save(post);
   }

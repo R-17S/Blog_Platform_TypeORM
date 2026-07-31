@@ -37,12 +37,12 @@ export class UpdatePostLikeStatusUseCase
       if (existing) await this.postLikesRepository.deleteLike(postId, userId);
       return;
     }
-    const status = existing ?? new PostLikesEntity();
-
-    status.postId = postId;
-    status.userId = userId;
-    status.status = likeStatus;
-
-    await this.postLikesRepository.save(status);
+    if (existing) {
+      existing.changeStatus(likeStatus);
+      await this.postLikesRepository.save(existing);
+    } else {
+      const newLike = PostLikesEntity.create(postId, userId, likeStatus);
+      await this.postLikesRepository.save(newLike);
+    }
   }
 }

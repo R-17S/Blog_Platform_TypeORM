@@ -73,7 +73,7 @@ export class RefreshTokensUseCase
 
     const newLastActiveDate = new Date(newPayload.iat * 1000);
 
-    device.lastActiveDate = newLastActiveDate;
+    device.updateLastActiveDate(newLastActiveDate);
     await this.securityDevicesRepository.save(device);
 
     return { accessToken, refreshToken: newRefreshToken };

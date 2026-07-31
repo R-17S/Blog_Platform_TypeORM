@@ -52,15 +52,6 @@ export class AuthService {
         extensions: [{ key: 'payload.deviceId', message: 'Device not found' }],
       });
 
-    const tokenIssuedAt = new Date(iat * 1000).getTime();
-    const deviceLastActive = new Date(device.lastActiveDate).getTime();
-    console.log("🔥 tokenIssuedAt:   ", tokenIssuedAt);
-    console.log("🔥 deviceLastActive:", deviceLastActive);
-    if (tokenIssuedAt !== deviceLastActive)
-      throw new DomainException({
-        code: DomainExceptionCode.Unauthorized,
-        message: 'Device not found',
-        extensions: [{ key: 'payload.iat', message: 'Token is outdated' }],
-      });
+    device.checkTokenActiveOrError(iat);
   }
 }

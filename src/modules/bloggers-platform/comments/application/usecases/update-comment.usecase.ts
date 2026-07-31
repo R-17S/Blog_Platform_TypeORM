@@ -28,15 +28,8 @@ export class UpdateCommentUseCase
       });
     }
 
-    if (comment.userId !== userId) {
-      throw new DomainException({
-        code: DomainExceptionCode.Forbidden,
-        message: 'You cannot edit this comment',
-      });
-    }
-
-    comment.content = input.content;
-
+    comment.checkOwnerOrError(userId);
+    comment.updateContent(input.content);
     await this.commentsRepository.save(comment);
   }
 }

@@ -22,29 +22,7 @@ export class ConfirmRegistrationUseCase
         extensions: [{ key: 'code', message: 'Invalid confirmation code' }],
       });
     }
-
-    if (user.isConfirmed) {
-      throw new DomainException({
-        code: DomainExceptionCode.BadRequest,
-        message: 'Email already confirmed',
-        extensions: [{ key: 'email', message: 'Email already confirmed' }],
-      });
-    }
-
-    if (
-      user.confirmationExpiration &&
-      user.confirmationExpiration < new Date()
-    ) {
-      throw new DomainException({
-        code: DomainExceptionCode.BadRequest,
-        message: 'Confirmation code expired',
-        extensions: [{ key: 'code', message: 'Confirmation code expired' }],
-      });
-    }
-
-    user.confirmationCode = null;
-    user.isConfirmed = true;
-    user.confirmationExpiration = null;
+    user.confirmEmail();
 
     await this.usersRepository.save(user);
   }

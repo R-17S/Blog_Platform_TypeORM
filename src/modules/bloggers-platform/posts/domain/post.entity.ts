@@ -9,6 +9,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { BlogEntity } from '../../blogs/domain/blog.entity';
+import { DomainException } from '../../../../core/exceptions/domain-exceptions';
+import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 
 @Entity({ name: 'Posts' })
 export class PostEntity {
@@ -45,4 +47,40 @@ export class PostEntity {
 
   @DeleteDateColumn({ type: 'timestamp with time zone', nullable: true })
   deletedAt: Date | null;
+
+  static create(input: {
+    title: string;
+    shortDescription: string;
+    content: string;
+    blogId: string;
+  }): PostEntity {
+    const post = new PostEntity();
+    post.id = crypto.randomUUID();
+    post.title = input.title;
+    post.shortDescription = input.shortDescription;
+    post.content = input.content;
+    post.blogId = input.blogId;
+    post.likesCount = 0;
+    post.dislikesCount = 0;
+    return post;
+  }
+
+  update(input: {
+    title: string;
+    shortDescription: string;
+    content: string;
+  }): void {
+    this.title = input.title;
+    this.shortDescription = input.shortDescription;
+    this.content = input.content;
+  }
+
+  checkBelongsToBlogOrError(blogId: string): void {
+    if (this.blogId !== blogId) {
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: 'Post not found for this blog',
+      });
+    }
+  }
 }

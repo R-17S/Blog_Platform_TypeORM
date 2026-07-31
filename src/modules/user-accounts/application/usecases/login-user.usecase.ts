@@ -44,14 +44,13 @@ export class LoginUserUseCase implements ICommandHandler<LoginUserCommand> {
     );
     const lastActiveDate = new Date(payload.iat * 1000);
 
-    const device = new SecurityDeviceEntity();
-    device.id = randomUUID();
-    device.userId = userId;
-    device.deviceId = deviceId;
-    device.ip = ip;
-    device.title = title;
-    device.lastActiveDate = lastActiveDate;
-
+    const device = SecurityDeviceEntity.create({
+      userId,
+      deviceId,
+      ip,
+      title,
+      lastActiveDate,
+    });
     await this.securityDevicesRepository.save(device);
     const accessToken = this.accessTokenContext.sign({
       id: userId,

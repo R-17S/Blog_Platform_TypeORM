@@ -36,20 +36,8 @@ export class UpdatePostByBlogIdUseCase
         message: 'Post not found',
       });
     }
-    if (post.blogId !== blogId) {
-      throw new DomainException({
-        code: DomainExceptionCode.NotFound,
-        message: 'Post not found for this blog',
-      });
-    }
-    // 3. Обновляем поля
-    post.title = input.title;
-    post.shortDescription = input.shortDescription;
-    post.content = input.content;
-    post.blogId = blogId;
-
-
-    // 6. Сохраняем
+    post.checkBelongsToBlogOrError(blogId);
+    post.update(input);
     await this.postsRepository.save(post);
   }
 }

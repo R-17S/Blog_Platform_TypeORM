@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CommentLikeEntity } from '../domain/comment.like-entity';
+import { CommentLikeEntity } from '../domain/commentLike.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 

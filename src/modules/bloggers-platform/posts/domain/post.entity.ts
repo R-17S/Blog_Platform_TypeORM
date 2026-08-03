@@ -11,6 +11,7 @@ import {
 import { BlogEntity } from '../../blogs/domain/blog.entity';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
+import { LikeStatusTypes } from '../api/view-dto/posts.view-dto';
 
 @Entity({ name: 'Posts' })
 export class PostEntity {
@@ -81,6 +82,29 @@ export class PostEntity {
         code: DomainExceptionCode.NotFound,
         message: 'Post not found for this blog',
       });
+    }
+  }
+
+  updateLikeStatus(
+    oldStatus: LikeStatusTypes,
+    newStatus: LikeStatusTypes,
+  ): void {
+    if (oldStatus === newStatus) return;
+
+    // Отменяем старый статус
+    if (oldStatus === LikeStatusTypes.Like) {
+      this.likesCount = Math.max(0, this.likesCount - 1);
+    }
+    if (oldStatus === LikeStatusTypes.Dislike) {
+      this.dislikesCount = Math.max(0, this.dislikesCount - 1);
+    }
+
+    // Применяем новый статус
+    if (newStatus === LikeStatusTypes.Like) {
+      this.likesCount++;
+    }
+    if (newStatus === LikeStatusTypes.Dislike) {
+      this.dislikesCount++;
     }
   }
 }

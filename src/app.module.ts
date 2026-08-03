@@ -27,7 +27,7 @@ import { ConfigService } from '@nestjs/config';
         type: 'postgres',
         url: configService.get<string>('DATABASE_URL'), // Используем переменную окружения для строки подключения
         autoLoadEntities: true, // Автоматически загружать сущности
-        synchronize: configService.get<string>('NODE_ENV') === 'development', // Отключаем автоматическую синхронизацию схемы для продакшена (может быть true для разработки)
+        synchronize: false, // Отключаем автоматическую синхронизацию схемы для продакшена (может быть true для разработки)
         logging: true,
       }),
       inject: [ConfigService],

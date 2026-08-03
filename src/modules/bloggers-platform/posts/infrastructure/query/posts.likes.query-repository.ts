@@ -5,7 +5,7 @@ import {
   PostViewModel,
   PostWithBlogNameSqlEntity,
 } from '../../api/view-dto/posts.view-dto';
-import { PostLikesEntity } from '../../domain/post.like-entity';
+import { PostLikesEntity } from '../../domain/postLike.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -178,21 +178,22 @@ export class PostLikesQueryRepository {
   ): Promise<PostViewModel[]> {
     const postIds = posts.map((p) => p.id);
 
-    const [statusesMap, newestLikesMap, likesCountMap, dislikesCountMap] =
-      await Promise.all([
-        userId ? this.getStatusesForPosts(userId, postIds) : {},
-        this.getNewestLikesForPosts_CTE(postIds),
-        this.getLikesCountForPosts(postIds),
-        this.getDislikesCountForPosts(postIds),
-      ]);
+    const [statusesMap, newestLikesMap] = await Promise.all([
+      userId ? this.getStatusesForPosts(userId, postIds) : {},
+      this.getNewestLikesForPosts_CTE(postIds),
+      // this.getLikesCountForPosts(postIds),
+      // this.getDislikesCountForPosts(postIds),
+    ]);
 
     return posts.map((post) =>
       PostViewModel.mapToView(
         post,
         statusesMap[post.id] ?? LikeStatusTypes.None,
         newestLikesMap[post.id] ?? [],
-        likesCountMap[post.id] ?? 0,
-        dislikesCountMap[post.id] ?? 0,
+        post.likesCount,
+        post.dislikesCount,
+        // likesCountMap[post.id] ?? 0,
+        // dislikesCountMap[post.id] ?? 0,
       ),
     );
   }

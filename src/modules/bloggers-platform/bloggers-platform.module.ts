@@ -30,9 +30,9 @@ import { BlogsSuperController } from './blogs/api/blogs-sa.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BlogEntity } from './blogs/domain/blog.entity';
 import { PostEntity } from './posts/domain/post.entity';
-import { PostLikesEntity } from './posts/domain/post.like-entity';
+import { PostLikesEntity } from './posts/domain/postLike.entity';
 import { CommentEntity } from './comments/domain/comment.entity';
-import { CommentLikeEntity } from './comments/domain/comment.like-entity';
+import { CommentLikeEntity } from './comments/domain/commentLike.entity';
 
 @Module({
   imports: [

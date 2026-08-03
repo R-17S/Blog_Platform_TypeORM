@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { LikeStatusTypes } from '../../api/view-dto/comments.view-dto';
-import { CommentLikeEntity } from '../../domain/comment.like-entity';
+import { CommentLikeEntity } from '../../domain/commentLike.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 

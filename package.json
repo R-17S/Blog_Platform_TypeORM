@@ -20,7 +20,10 @@
     "test:e2e": "cross-env NODE_ENV=testing jest --config ./test/jest-e2e.json",
     "test:users": "cross-env NODE_ENV=testing DOTENV_CONFIG_PATH=.env.testing node -r dotenv/config ./node_modules/jest/bin/jest.js --detectOpenHandles --config ./test/jest-e2e.json test/users.e2e-spec.ts",
     "localhost:run": "ssh -R 80:localhost:3003 nokey@localhost.run",
-    "localhost:run2": "ssh -p 443 -o StrictHostKeyChecking=no -R0:127.0.0.1:3003 free.pinggy.io"
+    "localhost:run2": "ssh -p 443 -o StrictHostKeyChecking=no -R0:127.0.0.1:3003 free.pinggy.io",
+    "migration:generate": "typeorm-ts-node-commonjs migration:generate -d src/typeorm.config.ts",
+    "migration:run": "typeorm-ts-node-commonjs migration:run -d src/typeorm.config.ts",
+    "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/typeorm.config.ts"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^2.0.2",

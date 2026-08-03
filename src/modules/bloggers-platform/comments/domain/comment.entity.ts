@@ -12,6 +12,7 @@ import { PostEntity } from '../../posts/domain/post.entity';
 import { UserEntity } from '../../../user-accounts/domain/user.entity';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
+import { LikeStatusTypes } from '../api/view-dto/comments.view-dto';
 
 @Entity({ name: 'Comments' })
 export class CommentEntity {
@@ -75,6 +76,29 @@ export class CommentEntity {
         code: DomainExceptionCode.Forbidden,
         message: 'You cannot edit this comment',
       });
+    }
+  }
+
+  updateLikeStatus(
+    oldStatus: LikeStatusTypes,
+    newStatus: LikeStatusTypes,
+  ): void {
+    if (oldStatus === newStatus) return;
+
+    // 1. Снимаем старый статус
+    if (oldStatus === LikeStatusTypes.Like) {
+      this.likesCount = Math.max(0, this.likesCount - 1);
+    }
+    if (oldStatus === LikeStatusTypes.Dislike) {
+      this.dislikesCount = Math.max(0, this.dislikesCount - 1);
+    }
+
+    // 2. Навешиваем новый статус
+    if (newStatus === LikeStatusTypes.Like) {
+      this.likesCount++;
+    }
+    if (newStatus === LikeStatusTypes.Dislike) {
+      this.dislikesCount++;
     }
   }
 }

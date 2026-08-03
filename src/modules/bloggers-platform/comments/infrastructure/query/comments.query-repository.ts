@@ -91,22 +91,18 @@ export class CommentsQueryRepository {
 
     let sortField = `c.${sortBy}`;
     if (sortBy === 'userLogin') {
-      sortField = 'u.login';
+      sortField = 'user.login';
     }
     const offset = params.calculateSkip();
     const limit = params.pageSize;
-    queryBuilder.orderBy(`c.${sortField}`, sortDirection);
+    queryBuilder.orderBy(`${sortField}`, sortDirection);
     queryBuilder.skip(offset).take(limit);
 
     // 2. сами комментарии
     const [comments, totalCount] = await queryBuilder.getManyAndCount();
     const commentIds = comments.map((c) => c.id);
 
-    // 3. лайки/дизлайки
-    const [likesMap, dislikesMap] = await Promise.all([
-      this.commentLikesQueryRepository.getLikesCountForComments(commentIds),
-      this.commentLikesQueryRepository.getDislikesCountForComments(commentIds),
-    ]);
+    // 3. лайки/дизлайки перенёс в модельку
 
     // 4. myStatus
     const statusesMap = userId
@@ -126,8 +122,8 @@ export class CommentsQueryRepository {
       return CommentViewModel.mapToView(
         mappedComment,
         statusesMap[comment.id] ?? LikeStatusTypes.None,
-        likesMap[comment.id] ?? 0,
-        dislikesMap[comment.id] ?? 0,
+        comment.likesCount,
+        comment.dislikesCount,
       );
     });
 

@@ -1,8 +1,10 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { PostLikesEntity } from '../../domain/post.like-entity';
+import { PostLikesEntity } from '../../domain/postLike.entity';
 import { PostsRepository } from '../../infrastructure/posts.repository';
 import { PostLikesRepository } from '../../infrastructure/post-likes.repository';
 import { LikeStatusTypes } from '../../api/view-dto/posts.view-dto';
+import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
+import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
 
 export class UpdatePostLikeStatusCommand {
   constructor(
@@ -26,16 +28,25 @@ export class UpdatePostLikeStatusUseCase
     userId,
     likeStatus,
   }: UpdatePostLikeStatusCommand): Promise<void> {
-    await this.postsRepository.checkPostExistsOrError(postId);
+    const post = await this.postsRepository.findById(postId);
+    if (!post) {
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: 'Post not found',
+      });
+    }
 
     const existing = await this.postLikesRepository.findByPostAndUser(
       postId,
       userId,
     );
 
+    const oldStatus = existing
+      ? (existing.status as LikeStatusTypes)
+      : LikeStatusTypes.None;
+
     if (likeStatus === LikeStatusTypes.None) {
       if (existing) await this.postLikesRepository.deleteLike(postId, userId);
-      return;
     }
     if (existing) {
       existing.changeStatus(likeStatus);
@@ -44,5 +55,8 @@ export class UpdatePostLikeStatusUseCase
       const newLike = PostLikesEntity.create(postId, userId, likeStatus);
       await this.postLikesRepository.save(newLike);
     }
+
+    post.updateLikeStatus(oldStatus, likeStatus);
+    await this.postsRepository.save(post);
   }
 }

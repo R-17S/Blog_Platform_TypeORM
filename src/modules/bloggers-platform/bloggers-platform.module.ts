@@ -4,10 +4,8 @@ import { CommentsController } from './comments/api/comments.controller';
 import { BlogsRepository } from './blogs/infrastructure/blogs.repository';
 import { BlogsQueryRepository } from './blogs/infrastructure/query/blogs.query-repository';
 import { PostsRepository } from './posts/infrastructure/posts.repository';
-import { PostsQueryRepository } from './posts/infrastructure/query/posts.query-repository';
 import { PostLikesQueryRepository } from './posts/infrastructure/query/posts.likes.query-repository';
 import { CommentsRepository } from './comments/infrastructure/comments.repository';
-import { CommentsQueryRepository } from './comments/infrastructure/query/comments.query-repository';
 import { CommentLikesQueryRepository } from './comments/infrastructure/query/comments.likes.query-repository';
 import { Module } from '@nestjs/common';
 import { CreateBlogUseCase } from './blogs/application/usecases/create-blog.usecase';
@@ -33,6 +31,8 @@ import { PostEntity } from './posts/domain/post.entity';
 import { PostLikesEntity } from './posts/domain/postLike.entity';
 import { CommentEntity } from './comments/domain/comment.entity';
 import { CommentLikeEntity } from './comments/domain/commentLike.entity';
+import { PostsQueryRepository } from './posts/infrastructure/query/posts.singleQuery-repository';
+import { CommentsQueryRepository } from './comments/infrastructure/query/comments.singleQuery-repository';
 
 @Module({
   imports: [

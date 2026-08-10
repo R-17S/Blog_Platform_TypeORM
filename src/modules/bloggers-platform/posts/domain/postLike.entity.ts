@@ -5,12 +5,14 @@ import {
   PrimaryColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { LikeStatusTypes } from '../api/view-dto/posts.view-dto';
 import { PostEntity } from './post.entity';
 import { UserEntity } from '../../../user-accounts/domain/user.entity';
 
 @Entity({ name: 'PostLikes' })
+@Index(['postId', 'status', 'createdAt'])
 export class PostLikesEntity {
   @PrimaryColumn({ type: 'uuid' })
   userId: string;
@@ -35,7 +37,6 @@ export class PostLikesEntity {
 
   @CreateDateColumn({ type: 'timestamp with time zone' })
   createdAt: Date;
-
 
   static create(
     postId: string,

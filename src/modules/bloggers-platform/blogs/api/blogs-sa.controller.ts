@@ -16,12 +16,10 @@ import { BlogsViewPaginated, BlogViewModel } from './view-dto/blogs.view-dto';
 import { BlogsQueryRepository } from '../infrastructure/query/blogs.query-repository';
 import { CreateBlogDto } from '../dto/create-blog.dto';
 import { UpdateBlogDto } from '../dto/update-blog.dto';
-import { BlogsRepository } from '../infrastructure/blogs.repository';
 import {
   PostsViewPaginated,
   PostViewModel,
 } from '../../posts/api/view-dto/posts.view-dto';
-import { PostsQueryRepository } from '../../posts/infrastructure/query/posts.query-repository';
 import { CreatePostDto } from '../../posts/dto/create-post.dto';
 import { CommandBus } from '@nestjs/cqrs';
 import { UpdateBlogCommand } from '../application/usecases/update-blog.usecase';
@@ -37,6 +35,7 @@ import { UserContextDto } from '../../../user-accounts/guards/dto/user-context.d
 import { UpdatePostByBlogIdCommand } from '../application/usecases/update-postByBlogId.usecase';
 import { DeletePostByBlogIdCommand } from '../application/usecases/delete-postByBlogId.usecase';
 import { UpdatePostByBlogIdDto } from '../../posts/dto/update-postByBlogId.dto';
+import { PostsQueryRepository } from '../../posts/infrastructure/query/posts.singleQuery-repository';
 
 @UseGuards(BasicAuthGuard)
 @SkipThrottle()
@@ -47,7 +46,6 @@ export class BlogsSuperController {
     private readonly blogsQueryRepository: BlogsQueryRepository,
 
     private readonly postsQueryRepository: PostsQueryRepository,
-    private readonly blogsRepository: BlogsRepository,
   ) {}
 
   @Get()
@@ -71,8 +69,7 @@ export class BlogsSuperController {
     @Query() query: PostInputQuery,
     @ExtractUserIfExistsFromRequest() user: UserContextDto | null,
   ): Promise<PostsViewPaginated> {
-    await this.blogsRepository.checkBlogExistsOrError(blogId);
-    return await this.postsQueryRepository.getPostsByBlogId(
+    return await this.postsQueryRepository.getPostsByBlogIdSingleQuery(
       blogId,
       query,
       user?.id,
@@ -93,7 +90,9 @@ export class BlogsSuperController {
         blogId,
       ),
     );
-    return await this.postsQueryRepository.getPostByIdOrError(newPostId);
+    return await this.postsQueryRepository.getPostByIdOrErrorSingleQuery(
+      newPostId,
+    );
   }
 
   @Put(':id')

@@ -13,7 +13,6 @@ import {
 } from '@nestjs/common';
 import { PostInputQuery } from './input-dto/get-posts-query-params.input-dto';
 import { PostsViewPaginated, PostViewModel } from './view-dto/posts.view-dto';
-import { PostsQueryRepository } from '../infrastructure/query/posts.query-repository';
 import { CreatePostDto } from '../dto/create-post.dto';
 import { UpdatePostDto } from '../dto/update-post.dto';
 import { PostsRepository } from '../infrastructure/posts.repository';
@@ -22,7 +21,6 @@ import {
   CommentViewModel,
 } from '../../comments/api/view-dto/comments.view-dto';
 import { CommentInputQuery } from '../../comments/api/input-dto/get-comments-query-params.input-dto';
-import { CommentsQueryRepository } from '../../comments/infrastructure/query/comments.query-repository';
 import { CreatePostCommand } from '../application/usecases/create-post.usecase';
 import { CommandBus } from '@nestjs/cqrs';
 import { JwtAuthGuard } from '../../../user-accounts/guards/bearer/jwt-auth.guard';
@@ -38,6 +36,8 @@ import { ExtractUserIfExistsFromRequest } from '../../../user-accounts/guards/de
 import { SkipThrottle } from '@nestjs/throttler';
 import { DeletePostCommand } from '../application/usecases/delete-post.usecase';
 import { UpdatePostCommand } from '../application/usecases/update-post.usecase';
+import { PostsQueryRepository } from '../infrastructure/query/posts.singleQuery-repository';
+import { CommentsQueryRepository } from '../../comments/infrastructure/query/comments.singleQuery-repository';
 
 @SkipThrottle()
 @Controller('posts')
@@ -75,7 +75,7 @@ export class PostsController {
     @ExtractUserIfExistsFromRequest() user: UserContextDto,
   ): Promise<CommentsViewPaginated> {
     await this.postsRepository.checkPostExistsOrError(postId);
-    return await this.commentsQueryRepository.getCommentsByPostId(
+    return await this.commentsQueryRepository.getCommentsByPostIdSingleQuery(
       postId,
       query,
       user?.id,
@@ -94,7 +94,9 @@ export class PostsController {
       CreateCommentCommand,
       string
     >(new CreateCommentCommand(input, postId, user.id, user.login));
-    return this.commentsQueryRepository.getCommentByIdOrError(newCommentId);
+    return this.commentsQueryRepository.getCommentByIdOrErrorSingleQuery(
+      newCommentId,
+    );
   }
 
   @Get()
@@ -103,7 +105,7 @@ export class PostsController {
     @Query() query: PostInputQuery,
     @ExtractUserIfExistsFromRequest() user: UserContextDto,
   ): Promise<PostsViewPaginated> {
-    return this.postsQueryRepository.getAllPosts(query, user?.id);
+    return this.postsQueryRepository.getAllPostsSingleQuery(query, user?.id);
   }
 
   @Post()
@@ -118,7 +120,9 @@ export class PostsController {
         input.blogId,
       ),
     );
-    return await this.postsQueryRepository.getPostByIdOrError(newPostId);
+    return await this.postsQueryRepository.getPostByIdOrErrorSingleQuery(
+      newPostId,
+    );
   }
 
   @Get(':id')
@@ -127,7 +131,10 @@ export class PostsController {
     @Param('id') id: string,
     @ExtractUserIfExistsFromRequest() user: UserContextDto,
   ) {
-    return await this.postsQueryRepository.getPostByIdOrError(id, user?.id);
+    return await this.postsQueryRepository.getPostByIdOrErrorSingleQuery(
+      id,
+      user?.id,
+    );
   }
 
   @Put(':id')

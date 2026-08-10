@@ -11,8 +11,6 @@ import { randomUUID } from 'node:crypto';
 import { DomainException } from '../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
 
-
-
 @Entity({ name: 'SecurityDevices' })
 export class SecurityDeviceEntity {
   @PrimaryColumn({ type: 'uuid' })

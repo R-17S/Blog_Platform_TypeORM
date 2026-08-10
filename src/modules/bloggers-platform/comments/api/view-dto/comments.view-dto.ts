@@ -6,6 +6,11 @@ export enum LikeStatusTypes {
   None = 'None',
 }
 
+export interface RawCommentSingleQueryResult
+  extends CommentWithUserLoginSqlEntity {
+  myStatus: LikeStatusTypes;
+}
+
 export interface CommentWithUserLoginSqlEntity {
   id: string;
   postId: string;

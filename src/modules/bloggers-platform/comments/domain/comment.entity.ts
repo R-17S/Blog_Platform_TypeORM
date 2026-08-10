@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryColumn,
@@ -15,6 +16,9 @@ import { DomainExceptionCode } from '../../../../core/exceptions/domain-exceptio
 import { LikeStatusTypes } from '../api/view-dto/comments.view-dto';
 
 @Entity({ name: 'Comments' })
+@Index(['postId', 'createdAt'])
+@Index(['postId', 'likesCount'])
+@Index(['userId'])
 export class CommentEntity {
   @PrimaryColumn({ type: 'uuid' })
   id: string;

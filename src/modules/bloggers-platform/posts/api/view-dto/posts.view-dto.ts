@@ -6,6 +6,15 @@ export enum LikeStatusTypes {
   None = 'None',
 }
 
+export interface RawPostSingleQueryResult extends PostWithBlogNameSqlEntity {
+  myStatus: LikeStatusTypes;
+  newestLikes: Array<{
+    addedAt: Date;
+    userId: string;
+    login: string;
+  }>;
+}
+
 export interface PostWithBlogNameSqlEntity {
   id: string;
   title: string;
@@ -57,7 +66,11 @@ export class PostViewModel {
         likesCount,
         dislikesCount,
         myStatus,
-        newestLikes,
+        newestLikes: (newestLikes ?? []).map((like) => ({
+          addedAt: new Date(like.addedAt),
+          userId: like.userId,
+          login: like.login,
+        })),
       },
     };
   }

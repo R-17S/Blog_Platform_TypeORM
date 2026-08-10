@@ -10,7 +10,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { CommentsQueryRepository } from '../infrastructure/query/comments.query-repository';
 import { JwtAuthGuard } from '../../../user-accounts/guards/bearer/jwt-auth.guard';
 import { UpdateCommentDto } from '../dto/update-comment.dto';
 import { UpdateCommentCommand } from '../application/usecases/update-comment.usecase';
@@ -23,6 +22,7 @@ import { UpdateCommentLikeStatusCommand } from '../application/usecases/update-c
 import { JwtOptionalAuthGuard } from '../../../user-accounts/guards/bearer/jwt-optional-auth.guard';
 import { ExtractUserIfExistsFromRequest } from '../../../user-accounts/guards/decorators/param/extract-user-if-exists-from-request.decorator';
 import { SkipThrottle } from '@nestjs/throttler';
+import { CommentsQueryRepository } from '../infrastructure/query/comments.singleQuery-repository';
 
 @SkipThrottle()
 @Controller('comments')
@@ -77,7 +77,7 @@ export class CommentsController {
     @Param('id') id: string,
     @ExtractUserIfExistsFromRequest() user: UserContextDto | null,
   ) {
-    return await this.commentsQueryRepository.getCommentByIdOrError(
+    return await this.commentsQueryRepository.getCommentByIdOrErrorSingleQuery(
       id,
       user?.id,
     );

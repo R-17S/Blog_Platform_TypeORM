@@ -3,12 +3,14 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { create } from 'node:domain';
 
 @Entity({ name: 'Blogs' })
+@Index(['createdAt'])
+@Index(['name'])
 export class BlogEntity {
   @PrimaryColumn({ type: 'uuid' })
   id: string;

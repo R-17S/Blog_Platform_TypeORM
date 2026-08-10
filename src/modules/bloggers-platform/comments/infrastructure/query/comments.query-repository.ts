@@ -38,11 +38,6 @@ export class CommentsQueryRepository {
       });
     }
 
-    const [likesMap, dislikesMap] = await Promise.all([
-      this.commentLikesQueryRepository.getLikesCountForComments([id]),
-      this.commentLikesQueryRepository.getDislikesCountForComments([id]),
-    ]);
-
     const statusesMap = userId
       ? await this.commentLikesQueryRepository.getStatusesForComments(userId, [
           id,
@@ -50,9 +45,6 @@ export class CommentsQueryRepository {
       : {};
 
     const myStatus = statusesMap[id] ?? LikeStatusTypes.None;
-    const likesCount = likesMap[id] ?? 0;
-    const dislikesCount = dislikesMap[id] ?? 0;
-
     const mappedComment: CommentWithUserLoginSqlEntity = {
       ...comment,
       userLogin: comment.user.login,
@@ -61,8 +53,8 @@ export class CommentsQueryRepository {
     return CommentViewModel.mapToView(
       mappedComment,
       myStatus,
-      likesCount,
-      dislikesCount,
+      comment.likesCount,
+      comment.dislikesCount,
     );
   }
 

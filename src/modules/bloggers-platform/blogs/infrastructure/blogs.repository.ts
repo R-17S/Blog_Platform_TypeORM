@@ -4,6 +4,7 @@ import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class BlogsRepository {
@@ -23,6 +24,12 @@ export class BlogsRepository {
   }
 
   async checkBlogExistsOrError(id: string): Promise<void> {
+    if (!isUUID(id)) {
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: 'Blog not found',
+      });
+    }
     const exists = await this.blogsTypeOrmRepository.exists({
       where: { id },
     });

@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
   PrimaryColumn,
 } from 'typeorm';
 import { DomainException } from '../../../core/exceptions/domain-exceptions';
@@ -21,14 +22,21 @@ export const passwordConstraints = {
 };
 
 @Entity({ name: 'Users' })
+@Index(['createdAt'])
+@Index(['confirmationCode'])
+@Index(['recoveryCode'])
+
+// Так это должно решить проблему софтделит
+@Index(['login'], { unique: true, where: '"deletedAt" IS NULL' })
+@Index(['email'], { unique: true, where: '"deletedAt" IS NULL' })
 export class UserEntity {
   @PrimaryColumn({ type: 'uuid' })
   id: string;
 
-  @Column({ type: 'character varying', length: 10, unique: true })
+  @Column({ type: 'character varying', length: 10 })
   login: string;
 
-  @Column({ type: 'character varying', length: 100, unique: true })
+  @Column({ type: 'character varying', length: 100 })
   email: string;
 
   @Column({ type: 'character varying' })

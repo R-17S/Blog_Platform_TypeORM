@@ -6,6 +6,7 @@ import { DynamicModule } from '@nestjs/common';
 export async function initAppModule(): Promise<DynamicModule> {
   // из-за того, что нам нужно донастроить динамический AppModule, мы не можем сразу создавать приложение,
   // а создаём сначала контекст
+  process.env.NODE_ENV = process.env.NODE_ENV || 'testing';
   const appContext = await NestFactory.createApplicationContext(AppModule);
   const coreConfig = appContext.get<CoreConfig>(CoreConfig);
   await appContext.close();

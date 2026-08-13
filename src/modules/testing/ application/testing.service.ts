@@ -19,4 +19,12 @@ export class TestingService {
       RESTART IDENTITY CASCADE;
     `);
   }
+
+  async clearQuizDatabase(): Promise<void> {
+    await this.dataSource.query(`
+    TRUNCATE TABLE
+      "QuizQuestion"
+    RESTART IDENTITY CASCADE;
+    `);
+  }
 }

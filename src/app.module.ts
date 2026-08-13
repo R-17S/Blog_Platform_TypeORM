@@ -17,6 +17,7 @@ import { DomainHttpExceptionsFilter } from './core/exceptions/filters/domain-exc
 import { AllHttpExceptionsFilter } from './core/exceptions/filters/all-exceptions.filter';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
+import { QuizGameModule } from './modules/quiz-game/quiz-game.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { ConfigService } from '@nestjs/config';
     UserAccountsModule,
     AuthModule,
     EmailModule,
+    QuizGameModule,
   ],
   controllers: [AppController],
   providers: [

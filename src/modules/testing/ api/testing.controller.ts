@@ -12,4 +12,10 @@ export class TestingController {
   async deleteAllData(): Promise<void> {
     await this.testingService.clearDatabase();
   }
+
+  @Delete('quiz-data')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async clearQuizDatabase(): Promise<void> {
+    await this.testingService.clearQuizDatabase();
+  }
 }

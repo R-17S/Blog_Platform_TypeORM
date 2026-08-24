@@ -28,9 +28,9 @@ export class UsersTestManager {
     const response = await request(this.app.getHttpServer())
       .post(`/${GLOBAL_PREFIX}/sa/users`)
       .send(createModel)
-      .auth('admin', 'qwerty')
+      .auth('admin', 'qwerty');
 
-    if(response.status === 500) console.log(response.text);
+    if (response.status === 500) console.log(response.text);
     return response.body as UserViewModel;
   }
 

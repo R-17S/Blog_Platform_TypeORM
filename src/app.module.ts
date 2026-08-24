@@ -42,14 +42,14 @@ import { QuizGameModule } from './modules/quiz-game/quiz-game.module';
         },
       ],
     }),
-    ThrottlerModule.forRoot({
-      throttlers: [
-        {
-          ttl: 10000,
-          limit: 5,
-        },
-      ],
-    }), // окно в секундах // максимум запросов
+    // ThrottlerModule.forRoot({
+    //   throttlers: [
+    //     {
+    //       ttl: 10000,
+    //       limit: 5,
+    //     },
+    //   ],
+    // }), // окно в секундах // максимум запросов
     BloggersPlatformModule,
     UserAccountsModule,
     AuthModule,
@@ -70,10 +70,10 @@ import { QuizGameModule } from './modules/quiz-game/quiz-game.module';
       provide: APP_FILTER,
       useClass: DomainHttpExceptionsFilter,
     },
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: ThrottlerGuard,
+    // },
   ],
 })
 export class AppModule {

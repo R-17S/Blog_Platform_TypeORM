@@ -5,7 +5,7 @@ import { TestingService } from '../src/modules/testing/ application/testing.serv
 import * as request from 'supertest';
 import { GLOBAL_PREFIX } from '../src/setup/global-prefix.setup';
 import { QuestionsRepository } from '../src/modules/quiz-game/infrastructure/questions.repository';
-import { QuestionEntity } from '../src/modules/quiz-game/domain/questionEntity';
+import { QuestionEntity } from '../src/modules/quiz-game/domain/question.entity';
 
 describe('SA Quiz Questions GET (e2e)', () => {
   let app: INestApplication;

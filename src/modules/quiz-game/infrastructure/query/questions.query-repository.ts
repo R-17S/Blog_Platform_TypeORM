@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { QuestionEntity } from '../../domain/questionEntity';
+import { QuestionEntity } from '../../domain/question.entity';
 import { Repository } from 'typeorm';
 import {
   PublishedStatus,
@@ -8,7 +8,7 @@ import {
 } from '../../api/query-dto/get-questions-query-params.input-dto';
 import { SortDirection } from '../../../../core/dto/base.query-params.input-dto';
 import {
-  QuestionViewModel,
+  QuestionDomainViewModel,
   QuestionViewPaginated,
 } from '../../api/view-dto/questions.view-dto';
 
@@ -53,7 +53,7 @@ export class QuestionsQueryRepository {
 
     const [quests, totalCount] = await queryBuilder.getManyAndCount();
     return QuestionViewPaginated.mapToView({
-      items: quests.map((quest) => QuestionViewModel.mapToView(quest)),
+      items: quests.map((quest) => QuestionDomainViewModel.mapToView(quest)),
       page: params.pageNumber,
       pageSize: params.pageSize,
       totalCount,

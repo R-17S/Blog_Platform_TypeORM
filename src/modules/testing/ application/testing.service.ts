@@ -15,16 +15,21 @@ export class TestingService {
         "Posts", 
         "SecurityDevices", 
         "Users", 
-        "Blogs" 
+        "Blogs",
+        "QuizQuestion",
+        "quizGames",
+        "gamePlayerProgress"
       RESTART IDENTITY CASCADE;
     `);
   }
 
-  async clearQuizDatabase(): Promise<void> {
-    await this.dataSource.query(`
-    TRUNCATE TABLE
-      "QuizQuestion"
-    RESTART IDENTITY CASCADE;
-    `);
-  }
+  // async clearQuizDatabase(): Promise<void> {
+  //   await this.dataSource.query(`
+  //   TRUNCATE TABLE
+  //     "QuizQuestion",
+  //     "quizGames",
+  //     "gamePlayerProgress"
+  //   RESTART IDENTITY CASCADE;
+  //   `);
+  // }
 }

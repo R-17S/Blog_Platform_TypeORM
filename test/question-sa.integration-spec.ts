@@ -5,7 +5,7 @@ import { PublishQuestionUseCase } from '../src/modules/quiz-game/application/pub
 import { CreateQuestionUseCase } from '../src/modules/quiz-game/application/create-question.useCase';
 import { initSettings } from './helpers/init-settings';
 import { beforeEach } from 'node:test';
-import { QuestionEntity } from '../src/modules/quiz-game/domain/questionEntity';
+import { QuestionEntity } from '../src/modules/quiz-game/domain/question.entity';
 import { DomainException } from '../src/core/exceptions/domain-exceptions';
 
 describe('question', () => {

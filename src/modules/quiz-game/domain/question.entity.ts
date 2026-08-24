@@ -25,8 +25,8 @@ export class QuestionEntity {
   @CreateDateColumn({ type: 'timestamp with time zone' })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamp with time zone' })
-  updatedAt: Date;
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  updatedAt: Date | null;
 
   static create(body: string, correctAnswers: string[]): QuestionEntity {
     const question = new QuestionEntity();
@@ -39,6 +39,7 @@ export class QuestionEntity {
   update(body: string, correctAnswers: string[]): void {
     this.body = body;
     this.correctAnswers = correctAnswers;
+    this.updatedAt = new Date();
   }
 
   updatePublish(published: boolean): void {
@@ -52,5 +53,6 @@ export class QuestionEntity {
       });
     }
     this.published = published;
+    this.updatedAt = new Date();
   }
 }

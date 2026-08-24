@@ -98,6 +98,6 @@ import { SecurityDeviceEntity } from './domain/securityDevices.entity';
     SendRegistrationEmailHandler,
     SendRecoveryEmailHandler,
   ],
-  exports: [AuthService],
+  exports: [AuthService, PassportModule, ACCESS_TOKEN_STRATEGY_INJECT_TOKEN],
 })
 export class AuthModule {}

@@ -6,6 +6,8 @@ import { EmailServiceMock } from '../mock/email-service.mock';
 
 import { UsersTestManager } from './users-test-manager';
 import { initAppModule } from '../../src/init-app-module';
+import { PairGameManager } from './pair-game-manager';
+import { QuestionsRepository } from '../../src/modules/quiz-game/infrastructure/questions.repository';
 
 export const initSettings = async (
   addSettingsToModuleBuilder?: (moduleBuilder: TestingModuleBuilder) => void,
@@ -32,9 +34,13 @@ export const initSettings = async (
   console.log('🔥 INIT: calling app.init()...');
   await app.init();
 
+  const questionsRepo = app.get(QuestionsRepository, { strict: false });
+
+
   return {
     app,
     httpServer: app.getHttpServer(),
     userTestManager: new UsersTestManager(app),
+    pairGameManager: new PairGameManager(app, questionsRepo),
   };
 };

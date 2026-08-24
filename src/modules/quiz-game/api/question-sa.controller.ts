@@ -16,7 +16,10 @@ import {
 import { CommandBus } from '@nestjs/cqrs';
 import { QuestionsQueryRepository } from '../infrastructure/query/questions.query-repository';
 import { QuestionsInputQuery } from './query-dto/get-questions-query-params.input-dto';
-import { QuestionViewPaginated } from './view-dto/questions.view-dto';
+import {
+  QuestionDomainViewModel,
+  QuestionViewPaginated,
+} from './view-dto/questions.view-dto';
 import { CreateQuestionInputModel } from '../dto/create-question.dto';
 import { CreateQuestionCommand } from '../application/create-question.useCase';
 import { UpdateQuestionInputModel } from '../dto/update-question.dto';
@@ -44,10 +47,13 @@ export class SaQuizQuestionsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async createQuestion(@Body() input: CreateQuestionInputModel): Promise<void> {
-    await this.commandBus.execute<CreateQuestionCommand, void>(
-      new CreateQuestionCommand(input.body, input.correctAnswers),
-    );
+  async createQuestion(
+    @Body() input: CreateQuestionInputModel,
+  ): Promise<QuestionDomainViewModel> {
+    return await this.commandBus.execute<
+      CreateQuestionCommand,
+      QuestionDomainViewModel
+    >(new CreateQuestionCommand(input.body, input.correctAnswers));
   }
 
   @Put(':id')

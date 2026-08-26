@@ -79,4 +79,23 @@ export class PairGameManager {
 
     return { status: response.status, body: response.body };
   }
+
+  async getMyGames(
+    accessToken: string,
+    query?: {
+      sortBy?: string;
+      sortDirection?: string;
+      pageNumber?: number;
+      pageSize?: number;
+    },
+    expectedStatus: HttpStatus = HttpStatus.OK,
+  ) {
+    const res = await request(this.app.getHttpServer())
+      .get(`/${GLOBAL_PREFIX}/pair-game-quiz/pairs/my`)
+      .auth(accessToken, { type: 'bearer' })
+      .query(query || {})
+      .expect(expectedStatus);
+
+    return { status: res.status, body: res.body };
+  }
 }

@@ -52,6 +52,10 @@ export function pipesSetup(app: INestApplication) {
       stopAtFirstError: true,
       //Для преобразования ошибок класс валидатора в необходимый вид
       exceptionFactory: (errors) => {
+        process.stderr.write(
+          `\n🔥 [RAW VALIDATION ERRORS]: ${JSON.stringify(errors, null, 2)}\n`,
+        );
+
         const formattedErrors = errorFormatter(errors);
 
         throw new DomainException({

@@ -3,6 +3,7 @@ import {
   PlayerProgressEntity,
 } from '../../domain/playerProgress.entity';
 import { GameStatus, PairGameEntity } from '../../domain/quizGame.entity';
+import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 
 export class PlayerViewModel {
   id: string;
@@ -88,4 +89,8 @@ export class GameMapper {
       score: progress.score,
     };
   }
+}
+
+export class GamesViewPaginated extends PaginatedViewDto<GameViewModel[]> {
+  //items: BlogViewModel[];
 }

@@ -3,8 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  JoinTable,
-  ManyToMany,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -13,6 +12,7 @@ import { UserEntity } from '../../user-accounts/domain/user.entity';
 import { AnswerVo, PlayerProgressEntity } from './playerProgress.entity';
 import { DomainException } from '../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
+import { QuizGameQuestionEntity } from './quizGameQuestion.entity';
 
 export enum GameStatus {
   PENDING_SECOND_PLAYER = 'PendingSecondPlayer',
@@ -52,9 +52,18 @@ export class PairGameEntity {
   @JoinColumn()
   secondPlayerProgress: PlayerProgressEntity | null;
 
-  @ManyToMany(() => QuestionEntity)
-  @JoinTable({ name: 'quiz_game_questions' })
-  questions: QuestionEntity[] | null;
+  @OneToMany(() => QuizGameQuestionEntity, (gq) => gq.game, {
+    cascade: true,
+  })
+  gameQuestions: QuizGameQuestionEntity[];
+
+  // Геттер, чтобы методы sendAnswer и toView работали с отсортированными вопросами
+  get questions(): QuestionEntity[] {
+    if (!this.gameQuestions) return [];
+    return [...this.gameQuestions]
+      .sort((a, b) => a.orderIndex - b.orderIndex)
+      .map((gq) => gq.question);
+  }
 
   static create(firstPlayer: UserEntity): PairGameEntity {
     const game = new PairGameEntity();
@@ -64,18 +73,24 @@ export class PairGameEntity {
     game.finishGameDate = null;
     game.firstPlayerProgress = PlayerProgressEntity.create(firstPlayer);
     game.secondPlayerProgress = null;
-    game.questions = null;
+    game.gameQuestions = [];
     return game;
   }
 
   connectSecondPlayer(
     secondPlayer: UserEntity,
-    question: QuestionEntity[],
+    questions: QuestionEntity[],
   ): void {
     this.secondPlayerProgress = PlayerProgressEntity.create(secondPlayer);
-    this.questions = question;
     this.status = GameStatus.ACTIVE;
     this.startGameDate = new Date();
+    this.gameQuestions = questions.map((q, index) => {
+      const gq = new QuizGameQuestionEntity();
+      gq.question = q;
+      gq.questionId = q.id;
+      gq.orderIndex = index;
+      return gq;
+    });
   }
 
   sendAnswer(userId: string, answer: string): AnswerVo {

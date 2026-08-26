@@ -28,7 +28,8 @@ export class PairGameRepository {
       .leftJoinAndSelect('fp.player', 'fpUser')
       .leftJoinAndSelect('g.secondPlayerProgress', 'sp')
       .leftJoinAndSelect('sp.player', 'spUser')
-      .leftJoinAndSelect('g.questions', 'q')
+      .leftJoinAndSelect('g.gameQuestions', 'gq')
+      .leftJoinAndSelect('gq.question', 'q')
       .where('g.id = :id', { id })
       .getOne();
   }
@@ -42,7 +43,8 @@ export class PairGameRepository {
       .leftJoinAndSelect('fp.player', 'fpUser')
       .leftJoinAndSelect('g.secondPlayerProgress', 'sp')
       .leftJoinAndSelect('sp.player', 'spUser')
-      .leftJoinAndSelect('g.questions', 'q')
+      .leftJoinAndSelect('g.gameQuestions', 'gq')
+      .leftJoinAndSelect('gq.question', 'q')
       .where('g.status IN (:status1, :status2)', {
         status1: GameStatus.PENDING_SECOND_PLAYER,
         status2: GameStatus.ACTIVE,

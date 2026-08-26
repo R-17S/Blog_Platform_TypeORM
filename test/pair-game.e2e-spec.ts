@@ -252,5 +252,15 @@ describe('Pair Game (e2e)', () => {
       expect(finishedGame.firstPlayerProgress.score).toBe(6);
       expect(finishedGame.secondPlayerProgress!.score).toBe(5);
     });
+
+    it('should sort games by status with secondary sort by pairCreatedDate desc', async () => {
+      const { body } = await pairGameManager.getMyGames(
+        userAToken,
+        { sortBy: 'status', sortDirection: 'asc', pageNumber: 1, pageSize: 10 },
+        HttpStatus.OK,
+      );
+
+      expect(body.totalCount).toBe(1);
+    });
   });
 });

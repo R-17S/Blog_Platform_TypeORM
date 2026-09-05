@@ -18,8 +18,8 @@ import {
   GameViewModel,
 } from './view-dto/game.view-dto';
 import { PairGamesQueryRepository } from '../infrastructure/query/pair-games.query-repository';
-import { ConnectToGameCommand } from '../application/connection-toGame.useCase';
-import { SendAnswerCommand } from '../application/send-answer.useCase';
+import { ConnectToGameCommand } from '../application/use-cases/connection-toGame.useCase';
+import { SendAnswerCommand } from '../application/use-cases/send-answer.useCase';
 import { AnswerInputDto } from '../dto/answer-input.dto';
 import { ExtractUserFromRequest } from '../../user-accounts/guards/decorators/param/extract-user-from-request.decorator';
 import { UserContextDto } from '../../user-accounts/guards/dto/user-context.dto';

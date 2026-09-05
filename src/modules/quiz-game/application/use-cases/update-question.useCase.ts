@@ -1,8 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { CreateQuestionCommand } from './create-question.useCase';
-import { QuestionsRepository } from '../infrastructure/questions.repository';
-import { DomainException } from '../../../core/exceptions/domain-exceptions';
-import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
+import { QuestionsRepository } from '../../infrastructure/questions.repository';
+import { DomainException } from '../../../../core/exceptions/domain-exceptions';
+import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 
 export class UpdateQuestionCommand {
   constructor(

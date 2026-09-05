@@ -20,7 +20,7 @@ export class QuizGameQuestionEntity {
   questionId: string;
 
   @Column({ type: 'int' })
-  orderIndex: number; // 0, 1, 2, 3, 4
+  orderIndex: number;
 
   @ManyToOne(() => PairGameEntity, (game) => game.gameQuestions, {
     onDelete: 'CASCADE',

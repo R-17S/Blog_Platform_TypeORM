@@ -150,4 +150,27 @@ export class PairGameEntity {
       }
     }
   }
+
+  hasOnePlayerFinished(): boolean {
+    const p1Finished = this.firstPlayerProgress.answers.length === 5;
+    const p2Finished = (this.secondPlayerProgress?.answers.length ?? 0) === 5;
+    return this.status === GameStatus.ACTIVE && p1Finished !== p2Finished;
+  }
+
+  finishByTimeout(): void {
+    if (this.status === GameStatus.FINISHED) return;
+    this.status = GameStatus.FINISHED;
+    this.finishGameDate = new Date();
+    const p1Finished = this.firstPlayerProgress.answers.length;
+    const p2Finished = this.secondPlayerProgress?.answers.length ?? 0;
+    if (p1Finished === 5 && p2Finished < 5) {
+      if (this.firstPlayerProgress.score > 0) {
+        this.firstPlayerProgress.score += 1;
+      }
+    } else if (p2Finished === 5 && p1Finished < 5) {
+      if (this.secondPlayerProgress && this.secondPlayerProgress.score > 0) {
+        this.secondPlayerProgress.score += 1;
+      }
+    }
+  }
 }

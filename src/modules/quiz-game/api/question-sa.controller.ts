@@ -21,12 +21,12 @@ import {
   QuestionViewPaginated,
 } from './view-dto/questions.view-dto';
 import { CreateQuestionInputModel } from '../dto/create-question.dto';
-import { CreateQuestionCommand } from '../application/create-question.useCase';
+import { CreateQuestionCommand } from '../application/use-cases/create-question.useCase';
 import { UpdateQuestionInputModel } from '../dto/update-question.dto';
-import { UpdateQuestionCommand } from '../application/update-question.useCase';
+import { UpdateQuestionCommand } from '../application/use-cases/update-question.useCase';
 import { PublishQuestionInputModel } from '../dto/update-questionPublish.dto';
-import { PublishQuestionCommand } from '../application/publish-question.useCase';
-import { DeleteQuestionCommand } from '../application/delete-question.useCase';
+import { PublishQuestionCommand } from '../application/use-cases/publish-question.useCase';
+import { DeleteQuestionCommand } from '../application/use-cases/delete-question.useCase';
 
 @UseGuards(BasicAuthGuard)
 @SkipThrottle()

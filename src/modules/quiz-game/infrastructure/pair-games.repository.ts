@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GameStatus, PairGameEntity } from '../domain/quizGame.entity';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 
 @Injectable()
 export class PairGameRepository {
@@ -10,19 +10,32 @@ export class PairGameRepository {
     private readonly pGRepo: Repository<PairGameEntity>,
   ) {}
 
-  async save(game: PairGameEntity): Promise<PairGameEntity> {
-    return this.pGRepo.save(game);
+  private getRepo(manager?: EntityManager): Repository<PairGameEntity> {
+    return manager ? manager.getRepository(PairGameEntity) : this.pGRepo;
   }
 
-  async findPendingGame(): Promise<PairGameEntity | null> {
-    return this.pGRepo.findOne({
+  async save(
+    game: PairGameEntity,
+    manager?: EntityManager,
+  ): Promise<PairGameEntity> {
+    return this.getRepo(manager).save(game);
+  }
+
+  async findPendingGame(
+    manager?: EntityManager,
+  ): Promise<PairGameEntity | null> {
+    return this.getRepo(manager).findOne({
       where: { status: GameStatus.PENDING_SECOND_PLAYER },
       order: { pairCreatedDate: 'ASC' },
+      lock: manager ? { mode: 'pessimistic_write' } : undefined,
     });
   }
 
-  async findGameById(id: string): Promise<PairGameEntity | null> {
-    return this.pGRepo
+  async findGameById(
+    id: string,
+    manager?: EntityManager,
+  ): Promise<PairGameEntity | null> {
+    const qb = this.getRepo(manager)
       .createQueryBuilder('g')
       .leftJoinAndSelect('g.firstPlayerProgress', 'fp')
       .leftJoinAndSelect('fp.player', 'fpUser')
@@ -30,14 +43,20 @@ export class PairGameRepository {
       .leftJoinAndSelect('sp.player', 'spUser')
       .leftJoinAndSelect('g.gameQuestions', 'gq')
       .leftJoinAndSelect('gq.question', 'q')
-      .where('g.id = :id', { id })
-      .getOne();
+      .where('g.id = :id', { id });
+
+    if (manager) {
+      qb.setLock('pessimistic_write');
+    }
+
+    return qb.getOne();
   }
 
   async findUnfinishedGameByUserId(
     userId: string,
+    manager?: EntityManager,
   ): Promise<PairGameEntity | null> {
-    return this.pGRepo
+    const qb = this.getRepo(manager)
       .createQueryBuilder('g')
       .leftJoinAndSelect('g.firstPlayerProgress', 'fp')
       .leftJoinAndSelect('fp.player', 'fpUser')
@@ -49,7 +68,12 @@ export class PairGameRepository {
         status1: GameStatus.PENDING_SECOND_PLAYER,
         status2: GameStatus.ACTIVE,
       })
-      .andWhere('(fpUser.id = :userId OR spUser.id = :userId)', { userId })
-      .getOne();
+      .andWhere('(fpUser.id = :userId OR spUser.id = :userId)', { userId });
+
+    if (manager) {
+      qb.setLock('pessimistic_write');
+    }
+
+    return qb.getOne();
   }
 }

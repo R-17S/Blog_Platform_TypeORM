@@ -1,8 +1,8 @@
 import { INestApplication } from '@nestjs/common';
-import { UpdateQuestionUseCase } from '../src/modules/quiz-game/application/update-question.useCase';
+import { UpdateQuestionUseCase } from '../src/modules/quiz-game/application/use-cases/update-question.useCase';
 import { QuestionsRepository } from '../src/modules/quiz-game/infrastructure/questions.repository';
-import { PublishQuestionUseCase } from '../src/modules/quiz-game/application/publish-question.useCase';
-import { CreateQuestionUseCase } from '../src/modules/quiz-game/application/create-question.useCase';
+import { PublishQuestionUseCase } from '../src/modules/quiz-game/application/use-cases/publish-question.useCase';
+import { CreateQuestionUseCase } from '../src/modules/quiz-game/application/use-cases/create-question.useCase';
 import { initSettings } from './helpers/init-settings';
 import { beforeEach } from 'node:test';
 import { QuestionEntity } from '../src/modules/quiz-game/domain/question.entity';
